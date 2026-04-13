@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-4" style="color:#F8E9E9;">
+    📝 Submissions — <span style="color:#8B2E2E;">{{ project.project_name }}</span>
+</h2>
+
+<div class="row">
+
+    <!-- LEFT COLUMN: Upload + History -->
+    <div class="col-md-5">
+
+        <!-- Upload Box -->
+        <div class="card card-dark p-4 mb-4">
+
+            <h4 style="color:#F8E9E9;">Upload / Paste Code</h4>
+
+            <form method="POST" enctype="multipart/form-data">
+
+                <!-- Submission Name -->
+                <div class="mb-3">
+                    <label style="color:#F8E9E9;">Submission Name (optional)</label>
+                    <input name="submission_name" class="form-control"
+                           placeholder="e.g., Optimized Merge Sort">
+                </div>
+
+                <!-- Language -->
+                <div class="mb-3">
+                    <label style="color:#F8E9E9;">Language</label>
+                    <select name="language" class="form-control" required>
+                        <option value="">-- Select --</option>
+                        <option value="c">C</option>
+                        <option value="cpp">C++</option>
+                        <option value="python">Python</option>
+                    </select>
+                </div>
+
+                <!-- Upload Code File -->
+                <div class="mb-3">
+                    <label style="color:#F8E9E9;">Code File (optional)</label>
+                    <input type="file" class="form-control" name="code_file">
+                </div>
+
+                <!-- Paste Code -->
+                <div class="mb-3">
+                    <label style="color:#F8E9E9;">Or Paste Code (required)</label>
+                    <textarea name="code_text" class="form-control" rows="6"
+                              placeholder="Paste your code here..."></textarea>
+                </div>
+
+                <h5 class="mt-4" style="color:#F8E9E9;">Test Input (optional)</h5>
+
+                <!-- Input file -->
+                <div class="mb-3">
+                    <label style="color:#F8E9E9;">Test Case File</label>
+                    <input type="file" class="form-control" name="input_file">
+                </div>
+
+                <!-- Input text -->
+                <div class="mb-3">
+                    <label style="color:#F8E9E9;">Or Input Text</label>
+                    <textarea name="input_text" class="form-control"
+                              rows="4" placeholder="Enter test input..."></textarea>
+                </div>
+
+                <button class="btn btn-burgundy w-100 mt-3">Save Submission</button>
+            </form>
+
+        </div>
+
+
+        <!-- Submission History -->
+        <h4 class="mt-4 mb-3" style="color:#F8E9E9;">📄 History</h4>
+
+        {% for s in submissions %}
+        <div class="card card-dark p-3 mb-3">
+
+            <div class="fw-bold" style="color:#F8E9E9;">
+                {{ s.submission_name or ("Submission " ~ s.submission_id) }}
+            </div>
+
+            <div style="color:#C9AFAF; font-size:0.9rem;">
+                {{ s.language|upper }} • {{ s.submitted_at }}
+            </div>
+
+            <a href="/submissions/{{ project.project_id }}?view={{ s.submission_id }}"
+               class="btn btn-outline-burgundy mt-2 me-1">View →</a>
+
+            <!-- Delete confirm (inline) -->
+            <div id="del-sub-{{ s.submission_id }}" style="display:none;" class="mt-2">
+                <p style="color:#FF8A80;font-size:0.82rem;margin-bottom:4px;">
+                    Delete this submission and all its logs?
+                </p>
+                <form method="POST"
+                      action="/submissions/{{ project.project_id }}/delete/{{ s.submission_id }}"
+                      class="d-flex gap-2">
+                    <button class="btn btn-danger btn-sm w-50">Yes</button>
+                    <button type="button" class="btn btn-secondary btn-sm w-50"
+                            onclick="document.getElementById('del-sub-{{s.submission_id}}').style.display='none';
+                                     document.getElementById('del-btn-{{s.submission_id}}').style.display='inline-block';">Cancel</button>
+                </form>
+            </div>
+            <button id="del-btn-{{ s.submission_id }}"
+                    class="btn btn-outline-danger btn-sm mt-1 w-100"
+                    onclick="document.getElementById('del-sub-{{s.submission_id}}').style.display='block';this.style.display='none';">
+                🗑 Delete
+            </button>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+
+    <!-- RIGHT COLUMN: Selected Submission -->
+    <div class="col-md-7">
+
+        {% if selected %}
+        <div class="card card-dark p-4">
+
+            <h4 style="color:#F8E9E9;">
+                📌 {{ selected.submission_name or ("Submission " ~ selected.submission_id) }}
+            </h4>
+
+            <p style="color:#C9AFAF;">
+                Language: <strong>{{ selected.language|upper }}</strong><br>
+                Submitted at: {{ selected.submitted_at }}
+            </p>
+
+            <h5 style="color:#F8E9E9;">Source Code</h5>
+            <pre class="p-3" style="background:#1F1414; color:#F8E9E9;
+            border-radius:10px; max-height:350px; overflow-y:auto;">
+{{ selected.source_code }}
+            </pre>
+
+            <!-- Run buttons -->
+            <div class="mt-3 d-flex gap-2">
+                <a href="/run/{{ selected.submission_id }}"
+                   class="btn btn-burgundy w-50">
+                    ▶ Run Normally
+                </a>
+                <a href="/opt/{{ selected.submission_id }}"
+                   class="btn btn-outline-burgundy w-50">
+                    ⚡ Run Optimized
+                </a>
+            </div>
+
+            <!-- Logs + Graph buttons -->
+            <div class="mt-2 d-flex gap-2">
+                <a href="/logs/{{ selected.submission_id }}"
+                   class="btn btn-secondary w-50">
+                    📋 View Logs
+                </a>
+                <a href="/compare/{{ selected.submission_id }}"
+                   class="btn btn-outline-burgundy w-50">
+                    📈 Compare Opt Runs
+                </a>
+            </div>
+
+            <!-- Advanced Neo4j buttons -->
+            <div class="mt-2 d-flex gap-2">
+                <a href="/best_opt/{{ selected.submission_id }}"
+                   class="btn btn-outline-burgundy w-33">
+                    🏆 Best Opt
+                </a>
+                <a href="/similar/{{ selected.submission_id }}"
+                   class="btn btn-outline-burgundy w-33">
+                    🔗 Similar
+                </a>
+                <a href="/evolution/{{ selected.project_id }}"
+                   class="btn btn-outline-burgundy w-33">
+                    📈 Evolution
+                </a>
+            </div>
+
+
+        </div>
+        {% else %}
+        <!-- No card shown -->
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

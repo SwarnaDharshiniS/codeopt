@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="text-center py-5">
+
+    <h1 class="fw-bold" style="color:#F8E9E9; font-size: 3rem;">
+        Welcome to <span style="color:#8B2E2E;">CodeOpt</span>
+    </h1>
+
+    <p class="mt-3 mb-4" style="color:#C9AFAF; font-size: 1.2rem;">
+        A modern developer platform to analyze, run, and optimize C/C++/Python code.<br>
+        Track execution time, compare compiler optimization levels,<br>
+        and manage your projects with a powerful DBMS-backed system.
+    </p>
+    
+    {% if not session.get('user_id') %}
+    <a href="/login" class="btn btn-burgundy btn-lg px-4 py-2 mt-3"
+       style="font-size:1.1rem;">
+        Login to Continue
+    </a>
+    {% else %}
+    <a href="/dashboard" class="btn btn-burgundy btn-lg px-4 py-2 mt-3"
+       style="font-size:1.1rem;">
+        Go to Dashboard →
+    </a>
+    {% endif %}
+</div>
+
+
+<!-- Feature Cards -->
+<div class="row mt-5">
+
+    <div class="col-md-4 mb-4">
+        <div class="card card-dark p-4">
+            <h4 class="fw-bold" style="color:#F8E9E9;">📁 Project Management</h4>
+            <p style="color:#C9AFAF;">
+                Create multiple projects, organize your code submissions,
+                and view all optimization results in one place.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card card-dark p-4">
+            <h4 class="fw-bold" style="color:#F8E9E9;">⚙ Code Execution</h4>
+            <p style="color:#C9AFAF;">
+                Run C, C++, and Python programs safely using isolated execution,
+                with real-time stdout, error logs, and execution timing.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card card-dark p-4">
+            <h4 class="fw-bold" style="color:#F8E9E9;">🚀 Compiler Optimizations</h4>
+            <p style="color:#C9AFAF;">
+                Compare -O0, -O1, -O2, and -O3 optimization levels.
+                Track binary size, compile time, and runtime performance.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

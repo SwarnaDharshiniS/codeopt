@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-4" style="color:#F8E9E9;">
+    ⚡ Optimized Run ({{ optimization_flag }}) —
+    <span style="color:#8B2E2E;">{{ submission.submission_name or ("Submission " ~ submission.submission_id) }}</span>
+</h2>
+
+<div class="row">
+
+    <!-- LEFT: Output + Optimization -->
+    <div class="col-md-8">
+
+        <!-- Output -->
+        <div class="card card-dark p-4 mb-4">
+            <h4 style="color:#F8E9E9;">Execution Output</h4>
+            <pre class="p-3"
+                 style="background:#1F1414; color:#F8E9E9; border-radius:10px;
+                        max-height:500px; overflow-y:auto; white-space:pre-wrap;">
+{{ output or "(No output)" }}
+            </pre>
+        </div>
+
+        <!-- Optimization Stats -->
+        <div class="card card-dark p-4 mb-4">
+            <h4 style="color:#F8E9E9;">Optimization Metrics</h4>
+
+            <p style="color:#C9AFAF;">
+                <strong>Optimization Flag:</strong> {{ optimization_flag }}<br>
+                <strong>Execution Time:</strong> {{ exec_time }} ms<br>
+                <strong>Binary Size:</strong> {{ file_size }} KB<br>
+                <strong>Exit Code:</strong> {{ return_code }}
+            </p>
+        </div>
+
+        <!-- Compiler info -->
+        {% if compilation_output %}
+        <div class="card card-dark p-4 mb-4">
+            <h4 style="color:#F8E9E9;">Compiler Diagnostics</h4>
+
+            <pre class="p-3"
+                 style="background:#1F1414; color:#F8E9E9; border-radius:10px;
+                        white-space:pre-wrap; max-height:300px; overflow-y:auto;">
+{{ compilation_output }}
+            </pre>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- RIGHT: Submit Info + Navigation -->
+    <div class="col-md-4">
+
+        <div class="card card-dark p-4">
+
+            <h4 style="color:#F8E9E9;">Submission Info</h4>
+
+            <p style="color:#C9AFAF;">
+                <strong>ID:</strong> {{ submission.submission_id }}<br>
+                <strong>Name:</strong> {{ submission.submission_name or "—" }}<br>
+                <strong>Language:</strong> {{ submission.language|upper }}<br>
+                <strong>Submitted At:</strong> {{ submission.submitted_at }}
+            </p>
+
+            <a href="/submissions/{{ submission.project_id }}"
+               class="btn btn-outline-burgundy w-100 mt-3">← Back to Submissions</a>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

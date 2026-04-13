@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-4" style="color:#F8E9E9;">
+    👋 Welcome, {{ user.name }}
+</h2>
+
+<div class="row">
+
+    <div class="col-md-4 mb-4">
+        <div class="card card-dark p-4">
+            <h3 style="color:#8B2E2E;">📁 {{ stats.projects }}</h3>
+            <p class="mb-1" style="color:#C9AFAF;">Projects</p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card card-dark p-4">
+            <h3 style="color:#8B2E2E;">🧾 {{ stats.submissions }}</h3>
+            <p class="mb-1" style="color:#C9AFAF;">Code Submissions</p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card card-dark p-4">
+            <h3 style="color:#8B2E2E;">⚡ {{ stats.runs }}</h3>
+            <p class="mb-1" style="color:#C9AFAF;">Optimization Runs</p>
+        </div>
+    </div>
+
+</div>
+
+<div class="mt-4">
+
+    <a href="/projects" class="btn btn-burgundy btn-lg me-2">
+        View Projects →
+    </a>
+
+    <a href="/projects" class="btn btn-outline-burgundy btn-lg">
+        Create New Project +
+    </a>
+
+</div>
+
+{% endblock %}

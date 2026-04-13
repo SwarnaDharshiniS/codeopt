@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Select Optimization Level</h3>
+
+<ul class="list-group">
+    {% for p in profiles %}
+    <li class="list-group-item d-flex justify-content-between">
+        <span>{{ p.profile_name }} ({{ p.compiler_flags }})</span>
+        
+        <a href="/opt/run/{{ submission.submission_id }}/{{ p.profile_id }}"
+            class="btn btn-burgundy mt-2">Run with {{ p.profile_name }}</a>
+
+    </li>
+    {% endfor %}
+</ul>
+
+<a href="/projects" class="btn btn-secondary mt-3">Back</a>
+
+{% endblock %}

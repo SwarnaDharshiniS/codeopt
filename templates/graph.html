@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="fw-bold mb-1" style="color:#F8E9E9;">
+            🕸 Knowledge Graph —
+            <span style="color:#8B2E2E;">{{ user_name }}</span>
+        </h2>
+        
+    </div>
+    <div class="d-flex gap-2">
+        <button onclick="waitForVis(loadGraph)" class="btn btn-burgundy">🔄 Refresh</button>
+        <a href="/dashboard" class="btn btn-secondary">← Dashboard</a>
+    </div>
+</div>
+
+<!-- LEGEND -->
+<div class="d-flex gap-3 mb-3 flex-wrap">
+    <span class="badge" style="background:#E55050; padding:7px 14px; border-radius:20px;">👤 User</span>
+    <span class="badge" style="background:#4A90D9; padding:7px 14px; border-radius:20px;">📁 Project</span>
+    <span class="badge" style="background:#27AE60; padding:7px 14px; border-radius:20px;">📄 Submission</span>
+    <span class="badge" style="background:#F39C12; padding:7px 14px; border-radius:20px;">⚡ OptimizationProfile</span>
+    <span style="color:#C9AFAF; font-size:0.85rem; align-self:center;">
+        Drag nodes • Scroll to zoom • Click to inspect
+    </span>
+</div>
+
+<!-- GRAPH CONTAINER -->
+<div class="card card-dark p-0 mb-3" style="border:1px solid #5C3A2E; position:relative;">
+
+    <!-- LOADING -->
+    <div id="loading-overlay"
+         style="position:absolute; inset:0; display:flex; align-items:center;
+                justify-content:center; background:#1A0F0F; border-radius:8px; z-index:10;">
+        <div style="text-align:center; color:#C9AFAF;">
+            <div class="spinner-border mb-3" style="color:#8B2E2E;"></div>
+            <div>Loading graph from Neo4j...</div>
+        </div>
+    </div>
+
+    <!-- GRAPH -->
+    <!-- <div id="graph-container"
+         style="width:100%; height:620px; background:#1A0F0F; border-radius:8px;">
+    </div> -->
+    <div id="graph-container"
+        style="width:100%; height:calc(100vh - 220px); background:#1A0F0F; border-radius:8px;">
+    </div>
+</div>
+
+<!-- EMPTY STATE (placed AFTER graph) -->
+<div id="empty-state" class="card card-dark p-4 mb-3" style="display:none;">
+    <p style="color:#C9AFAF; margin:0;">
+        No graph data yet. Create a project, submit code,
+        and run optimizations — they'll appear here automatically.
+    </p>
+</div>
+
+<!-- NODE DETAILS -->
+<div id="node-detail" class="card card-dark p-4 mb-3" style="display:none;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 id="detail-title" style="color:#F8E9E9;"></h5>
+        <button onclick="document.getElementById('node-detail').style.display='none'"
+                class="btn btn-sm btn-secondary">✕</button>
+    </div>
+    <div id="detail-body" style="color:#C9AFAF;"></div>
+</div>
+
+<!-- VIS JS -->
+<link href="https://unpkg.com/vis-network@9.1.9/styles/vis-network.min.css" rel="stylesheet">
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+
+<script>
+function waitForVis(cb) {
+    if (typeof vis !== "undefined") cb();
+    else setTimeout(() => waitForVis(cb), 100);
+}
+
+const GROUP_COLORS = {
+    User: { background: "#E55050" },
+    Project: { background: "#4A90D9" },
+    Submission: { background: "#27AE60" },
+    OptimizationProfile: { background: "#F39C12" }
+};
+
+let network = null;
+
+async function loadGraph() {
+    document.getElementById("loading-overlay").style.display = "flex";
+    document.getElementById("empty-state").style.display = "none";
+    document.getElementById("node-detail").style.display = "none";
+
+    try {
+        const resp = await fetch("/graph/data");
+        const data = await resp.json();
+
+        if (!data.nodes || data.nodes.length === 0) {
+            document.getElementById("loading-overlay").style.display = "none";
+            document.getElementById("empty-state").style.display = "block";
+            document.getElementById("graph-container").style.display = "none";
+            return;
+        }
+
+        document.getElementById("graph-container").style.display = "block";
+
+        const nodes = new vis.DataSet(data.nodes.map(n => ({
+            id: n.id,
+            label: n.label,
+            title: n.title,
+            color: GROUP_COLORS[n.group],
+            font: { color: "#F8E9E9" },
+            shape: "dot",
+            size: n.group === "User" ? 30 :
+                  n.group === "Project" ? 24 :
+                  n.group === "Submission" ? 18 : 14
+        })));
+
+        const edges = new vis.DataSet(data.edges.map(e => ({
+            id: e.id,
+            from: e.from,
+            to: e.to,
+            label: "",  // cleaner UI
+            arrows: "to",
+            color: "#5C3A2E"
+        })));
+
+        const options = {
+            layout: {
+                hierarchical: {
+                    enabled: true,
+                    direction: "LR"
+                }
+            },
+            physics: false
+        };
+
+        if (network) network.destroy();
+        network = new vis.Network(
+            document.getElementById("graph-container"),
+            { nodes, edges },
+            options
+        );
+
+        document.getElementById("loading-overlay").style.display = "none";
+
+    } catch (err) {
+        document.getElementById("loading-overlay").style.display = "none";
+        console.error(err);
+    }
+}
+
+window.addEventListener("load", () => waitForVis(loadGraph));
+</script>
+
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-1" style="color:#F8E9E9;">
+    ⚡ Best Optimization Finder
+</h2>
+<p style="color:#C9AFAF;">
+    {{ submission.submission_name or ("Submission " ~ submission.submission_id) }}
+    — {{ submission.language | upper }}
+</p>
+
+<div class="d-flex gap-2 mb-4">
+    <a href="/submissions/{{ submission.project_id }}"
+       class="btn btn-secondary">← Back</a>
+    <a href="/compare/{{ submission.submission_id }}"
+       class="btn btn-outline-burgundy">📈 Full Comparison</a>
+</div>
+
+{% if best %}
+<!-- Winner Card -->
+<div class="card card-dark p-4 mb-4"
+     style="border: 2px solid #8B2E2E; background:#2A1010;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h3 style="color:#8B2E2E; margin:0;">
+                🏆 Best: {{ best.compiler_flags }}
+            </h3>
+            <p style="color:#C9AFAF; margin:4px 0 0;">
+                {{ best.profile_name }}
+            </p>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:2rem; color:#F8E9E9; font-weight:bold;">
+                {{ best.exec_time_ms }} ms
+            </div>
+            <div style="color:#C9AFAF; font-size:0.85rem;">
+                {{ best.file_size_kb }} KB binary
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Runs Ranked -->
+<div class="card card-dark p-4 mb-4">
+    <h4 style="color:#F8E9E9;">📊 All Runs Ranked by Speed</h4>
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Flag</th>
+                <th>Profile</th>
+                <th>Exec Time (ms)</th>
+                <th>Size (KB)</th>
+                <th>Exit Code</th>
+                <th>Ran At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for run in runs %}
+            <tr {% if loop.first %}style="border-left:3px solid #8B2E2E;"{% endif %}>
+                <td>
+                    {% if loop.first %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+                </td>
+                <td style="color:#8B2E2E; font-weight:bold;">{{ run.compiler_flags }}</td>
+                <td>{{ run.profile_name }}</td>
+                <td>
+                    {{ run.exec_time_ms }}
+                    {% if loop.first %}<span style="color:#8B2E2E; font-size:0.8rem;">✅ fastest</span>{% endif %}
+                </td>
+                <td>{{ run.file_size_kb }}</td>
+                <td>{{ run.return_code }}</td>
+                <td style="font-size:0.82rem;">{{ run.ran_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+<div class="card card-dark p-4">
+    <p style="color:#C9AFAF;">
+        No optimization runs yet for this submission.
+        Run it with ⚡ Run Optimized first.
+    </p>
+</div>
+{% endif %}
+
+{% endblock %}

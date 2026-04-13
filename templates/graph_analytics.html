@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-4" style="color:#F8E9E9;">
+    🌐 Graph Analytics
+    <span style="font-size:0.9rem; font-weight:normal; color:#C9AFAF;">
+        — Multi-user Neo4j Insights
+    </span>
+</h2>
+
+<div class="d-flex gap-2 mb-4">
+    <a href="/graph"       class="btn btn-secondary">🕸 Graph View</a>
+    <a href="/analytics"   class="btn btn-outline-burgundy">📊 MongoDB Analytics</a>
+    <a href="/recommendations" class="btn btn-outline-burgundy">🤝 Recommendations</a>
+</div>
+
+<div class="row">
+
+    <!-- ── 1. Opt Performance (global) ── -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-dark p-4">
+            <h4 style="color:#F8E9E9;">⚡ Global Opt Performance</h4>
+            <p style="color:#C9AFAF; font-size:0.82rem;">
+                Avg exec time per flag across all users and submissions.
+            </p>
+            <table class="table mt-2">
+                <thead>
+                    <tr><th>Flag</th><th>Avg Time (ms)</th><th>Avg Size (KB)</th><th>Runs</th></tr>
+                </thead>
+                <tbody>
+                    {% for row in analytics.opt_performance %}
+                    <tr>
+                        <td style="color:#8B2E2E; font-weight:bold;">{{ row.flag }}</td>
+                        <td>{{ "%.1f" | format(row.avg_time_ms or 0) }}</td>
+                        <td>{{ "%.1f" | format(row.avg_size_kb or 0) }}</td>
+                        <td>{{ row.total_runs }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4">No data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── 2. Popular Profiles ── -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-dark p-4">
+            <h4 style="color:#F8E9E9;">🏆 Most Used Profiles</h4>
+            <p style="color:#C9AFAF; font-size:0.82rem;">
+                Profiles most frequently chosen across all users.
+            </p>
+            <table class="table mt-2">
+                <thead>
+                    <tr><th>Flag</th><th>Profile</th><th>Users</th><th>Total Uses</th></tr>
+                </thead>
+                <tbody>
+                    {% for row in analytics.popular_profiles %}
+                    <tr>
+                        <td style="color:#8B2E2E; font-weight:bold;">{{ row.flag }}</td>
+                        <td>{{ row.profile_name }}</td>
+                        <td>{{ row.user_count }}</td>
+                        <td>{{ row.total_uses }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4">No data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── 3. Language Distribution ── -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-dark p-4">
+            <h4 style="color:#F8E9E9;">💻 Language Distribution</h4>
+            <p style="color:#C9AFAF; font-size:0.82rem;">
+                Submission counts by language across all users.
+            </p>
+            {% for row in analytics.language_dist %}
+            <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1">
+                    <span style="color:#F8E9E9;">{{ row.language | upper }}</span>
+                    <span style="color:#C9AFAF;">{{ row.count }}</span>
+                </div>
+                {% set max_count = analytics.language_dist[0].count %}
+                <div style="background:#2E1A1A; border-radius:4px; height:8px;">
+                    <div style="background:#8B2E2E; border-radius:4px; height:8px;
+                                width:{{ ((row.count / max_count) * 100) | int }}%;"></div>
+                </div>
+            </div>
+            {% else %}
+            <p style="color:#C9AFAF;">No submissions yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ── 4. Most Active Users ── -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-dark p-4">
+            <h4 style="color:#F8E9E9;">👤 Most Active Users</h4>
+            <p style="color:#C9AFAF; font-size:0.82rem;">
+                Ranked by total submission count.
+            </p>
+            <table class="table mt-2">
+                <thead>
+                    <tr><th>#</th><th>User</th><th>Submissions</th></tr>
+                </thead>
+                <tbody>
+                    {% for row in analytics.active_users %}
+                    <tr>
+                        <td style="color:#C9AFAF;">{{ loop.index }}</td>
+                        <td style="color:#F8E9E9;">{{ row.name }}</td>
+                        <td>{{ row.submission_count }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3">No data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── 5. Cross-User Similarity Links ── -->
+    <div class="col-12 mb-4">
+        <div class="card card-dark p-4">
+            <h4 style="color:#F8E9E9;">🔗 Cross-User Similarity Network</h4>
+            <p style="color:#C9AFAF; font-size:0.82rem;">
+                Users connected through similar submissions — the foundation
+                of the recommendation engine.
+            </p>
+
+            {% if analytics.user_connections %}
+            <table class="table mt-2">
+                <thead>
+                    <tr>
+                        <th>User 1</th>
+                        <th>User 2</th>
+                        <th>Shared Similar Submissions</th>
+                        <th>Avg Similarity Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in analytics.user_connections %}
+                    <tr>
+                        <td style="color:#F8E9E9;">{{ row.user1 }}</td>
+                        <td style="color:#F8E9E9;">{{ row.user2 }}</td>
+                        <td>{{ row.shared_similar_submissions }}</td>
+                        <td>{{ "%.2f" | format(row.avg_similarity or 0) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color:#C9AFAF; margin-top:12px;">
+                No cross-user connections yet. Run submissions to build
+                the similarity network.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

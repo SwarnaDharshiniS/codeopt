@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-4" style="color:#F8E9E9;">
+    ⚡ Optimization Comparison —
+    <span style="color:#8B2E2E;">
+        {{ submission.submission_name or ("Submission " ~ submission_id) }}
+    </span>
+</h2>
+
+<a href="/submissions/{{ submission.project_id }}"
+   class="btn btn-secondary mb-4">← Back to Submissions</a>
+
+<a href="/graph"
+   class="btn btn-outline-burgundy mb-4 ms-2">🕸 View Graph</a>
+
+{% if runs %}
+
+<!-- Summary Table -->
+<div class="card card-dark p-4 mb-4">
+    <h4 style="color:#F8E9E9;">📊 Side-by-Side Comparison</h4>
+
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th>Profile</th>
+                <th>Flag</th>
+                <th>Exec Time (ms)</th>
+                <th>Binary Size (KB)</th>
+                <th>Exit Code</th>
+                <th>Ran At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set min_time = runs | map(attribute='exec_time_ms') | min %}
+
+            {% for run in runs %}
+            <tr {% if run.exec_time_ms == min_time %}
+                style="border-left: 3px solid #8B2E2E; background:#2A1C1C;"
+                {% endif %}>
+
+                <td>{{ run.profile_name }}</td>
+
+                <td style="color:#8B2E2E; font-weight:bold;">
+                    {{ run.compiler_flags }}
+                </td>
+
+                <td>
+                    {{ run.exec_time_ms }}
+                    {% if run.exec_time_ms == min_time %}
+                    <span style="color:#8B2E2E; font-size:0.8rem;">
+                        ✅ fastest
+                    </span>
+                    {% endif %}
+                </td>
+
+                <td>{{ run.file_size_kb }}</td>
+                <td>{{ run.return_code }}</td>
+                <td style="font-size:0.82rem;">{{ run.ran_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Individual Run Cards -->
+<h4 style="color:#F8E9E9;">🔍 Run Details</h4>
+
+<div class="row">
+    {% for run in runs %}
+    <div class="col-md-6 mb-3">
+        <div class="card card-dark p-4 h-100">
+
+            <h5 style="color:#8B2E2E;">
+                {{ run.compiler_flags }}
+                <span style="color:#C9AFAF; font-size:0.85rem; font-weight:normal;">
+                    — {{ run.profile_name }}
+                </span>
+            </h5>
+
+            <p style="color:#C9AFAF; font-size:0.9rem;">
+                ⏱ <strong>{{ run.exec_time_ms }} ms</strong><br>
+                💾 <strong>{{ run.file_size_kb }} KB</strong><br>
+                🔢 Exit Code: <strong>{{ run.return_code }}</strong><br>
+                🕒 {{ run.ran_at }}
+            </p>
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="card card-dark p-4">
+    <p style="color:#C9AFAF;">
+        No optimization runs found for this submission in Neo4j.
+        Run the submission with at least one optimization profile first.
+    </p>
+</div>
+{% endif %}
+
+{% endblock %}

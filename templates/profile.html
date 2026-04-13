@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-4" style="color:#F8E9E9;">👤 My Profile</h2>
+
+<div class="row">
+
+    <!-- ── UPDATE FORM ── -->
+    <div class="col-md-5 mb-4">
+        <div class="card card-dark p-4">
+            <h4 style="color:#F8E9E9;">Edit Details</h4>
+
+            {% if error %}
+            <div class="alert mt-2 p-2"
+                 style="background:#3B0000; color:#FF8A80; border:1px solid #8B2E2E;
+                        border-radius:6px; font-size:0.9rem;">
+                ⚠ {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" class="mt-3">
+                <input type="hidden" name="action" value="update">
+
+                <div class="mb-3">
+                    <label style="color:#C9AFAF;">Name</label>
+                    <input name="name" class="form-control"
+                           value="{{ user.name }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label style="color:#C9AFAF;">Email</label>
+                    <input name="email" type="email" class="form-control"
+                           value="{{ user.email }}" required>
+                </div>
+
+                <button class="btn btn-burgundy w-100">
+                    💾 Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── DELETE ACCOUNT ── -->
+    <div class="col-md-5 mb-4">
+        <div class="card card-dark p-4"
+             style="border-color:#8B2E2E;">
+
+            <h4 style="color:#F8E9E9;">Delete Account</h4>
+            <p style="color:#C9AFAF; font-size:0.9rem;">
+                This will permanently delete your account and all associated
+                projects, submissions, and logs. This cannot be undone.
+            </p>
+
+            <!-- Confirm toggle -->
+            <div id="delete-confirm" style="display:none;">
+                <p style="color:#FF8A80; font-size:0.9rem; font-weight:bold;">
+                    Are you sure? All your data will be lost.
+                </p>
+                <form method="POST" class="d-flex gap-2">
+                    <input type="hidden" name="action" value="delete">
+                    <button class="btn btn-danger w-50">
+                        Yes, Delete
+                    </button>
+                    <button type="button" class="btn btn-secondary w-50"
+                            onclick="document.getElementById('delete-confirm').style.display='none';
+                                     document.getElementById('delete-btn').style.display='block';">
+                        Cancel
+                    </button>
+                </form>
+            </div>
+
+            <button id="delete-btn" class="btn btn-outline-danger w-100"
+                    onclick="document.getElementById('delete-confirm').style.display='block';
+                             this.style.display='none';">
+                🗑 Delete My Account
+            </button>
+
+        </div>
+    </div>
+
+</div>
+
+<a href="/dashboard" class="btn btn-secondary">← Dashboard</a>
+
+{% endblock %}

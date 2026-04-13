@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-4" style="color:#F8E9E9;">
+    📊 Analytics
+</h2>
+
+<!-- ── Summary Cards ── -->
+<div class="row mb-4">
+
+    <div class="col-md-4 mb-3">
+        <div class="card card-dark p-4 text-center">
+            <h3 style="color:#8B2E2E;">{{ total_exec }}</h3>
+            <p style="color:#C9AFAF;">Normal Runs Logged</p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card card-dark p-4 text-center">
+            <h3 style="color:#8B2E2E;">{{ total_opt }}</h3>
+            <p style="color:#C9AFAF;">Optimization Runs Logged</p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card card-dark p-4 text-center">
+            <h3 style="color:#8B2E2E;">{{ best_opt }}</h3>
+            <p style="color:#C9AFAF;">Fastest Optimization Level</p>
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+
+    <!-- ── Avg Time per Language ── -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-dark p-4">
+            <h4 style="color:#F8E9E9;">⏱ Avg Exec Time by Language</h4>
+
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>Language</th>
+                        <th>Avg Time (ms)</th>
+                        <th>Total Runs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in lang_stats %}
+                    <tr>
+                        <td>{{ row._id | upper }}</td>
+                        <td>{{ "%.1f" | format(row.avg_time_ms or 0) }}</td>
+                        <td>{{ row.total_runs }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3">No data yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Avg Time per Optimization Flag ── -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-dark p-4">
+            <h4 style="color:#F8E9E9;">⚡ Avg Metrics by Optimization Flag</h4>
+                <table class="table mt-3">
+                    <thead>
+                        <tr >
+                            <th>⚙ Flag</th>
+                            <th>⏱ Avg Time (ms)</th>
+                            <th>💾 Avg Size (KB)</th>
+                            <th>🔁 Runs</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for row in opt_stats %}
+                        <tr>
+                            
+                            <!-- Flag -->
+                            <td style="color:#8B2E2E; font-weight:bold;">
+                                {{ row._id }}
+                            </td>
+
+                            <!-- Time -->
+                            <td>
+                                {{ "%.1f" | format(row.avg_time_ms or 0) }}
+                            </td>
+
+                            <!-- Size -->
+                            <td>
+                                {{ "%.1f" | format(row.avg_size_kb or 0) }}
+                            </td>
+
+                            <!-- Runs -->
+                            <td>
+                                {{ row.total_runs }}
+                            </td>
+
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align:center;">
+                                No data yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+        </div>
+    </div>
+
+</div>
+
+<a href="/dashboard" class="btn btn-secondary mt-2">← Back to Dashboard</a>
+
+{% endblock %}

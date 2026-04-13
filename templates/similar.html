@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-1" style="color:#F8E9E9;">
+    🔗 Similar Submissions
+</h2>
+<p style="color:#C9AFAF;">
+    {{ submission.submission_name or ("Submission " ~ submission.submission_id) }}
+    — {{ submission.language | upper }}
+</p>
+
+<div class="d-flex gap-2 mb-4">
+    <a href="/submissions/{{ submission.project_id }}"
+       class="btn btn-secondary">← Back</a>
+    <a href="/recommendations"
+       class="btn btn-outline-burgundy">🤝 Recommendations</a>
+</div>
+
+{% if similars %}
+<p style="color:#C9AFAF; font-size:0.85rem; margin-bottom:16px;">
+    Found {{ similars | length }} similar submission(s) across all users —
+    based on same language, similar output, and similar runtime.
+</p>
+
+<div class="row">
+    {% for s in similars %}
+    <div class="col-md-6 mb-3">
+        <div class="card card-dark p-4">
+
+            <!-- Similarity Score Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span style="color:#F8E9E9; font-weight:bold;">
+                    {{ s.submission_name or ("Submission " ~ s.submission_id) }}
+                </span>
+                <span style="color:#8B2E2E; font-weight:bold; font-size:1.1rem;">
+                    {{ (s.similarity_score * 100) | int }}% match
+                </span>
+            </div>
+
+            <!-- Score bar -->
+            <div style="background:#2E1A1A; border-radius:4px; height:6px; margin-bottom:12px;">
+                <div style="background:#8B2E2E; border-radius:4px; height:6px;
+                            width:{{ (s.similarity_score * 100) | int }}%;"></div>
+            </div>
+
+            <p style="color:#C9AFAF; font-size:0.88rem; margin:0;">
+                👤 Owner: <strong style="color:#F8E9E9;">{{ s.owner_name }}</strong><br>
+                💻 Language: <strong>{{ s.language | upper }}</strong><br>
+                🔍 Reason: <span style="color:#8B2E2E;">{{ s.reason | replace("_", " ") | replace("+", " + ") }}</span>
+            </p>
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="card card-dark p-4">
+    <p style="color:#C9AFAF;">
+        No similar submissions found yet. Run this submission first so
+        similarity scores can be calculated, then check back.
+    </p>
+</div>
+{% endif %}
+
+{% endblock %}
