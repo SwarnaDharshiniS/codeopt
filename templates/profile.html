@@ -3,10 +3,10 @@
 
 <h2 class="fw-bold mb-4" style="color:#F8E9E9;">👤 My Profile</h2>
 
-<div class="row">
+<div class="row g-4">
 
-    <!-- ── UPDATE FORM ── -->
-    <div class="col-md-5 mb-4">
+    <!-- ── UPDATE NAME / EMAIL ── -->
+    <div class="col-md-5">
         <div class="card card-dark p-4">
             <h4 style="color:#F8E9E9;">Edit Details</h4>
 
@@ -18,18 +18,28 @@
             </div>
             {% endif %}
 
+            {% if success %}
+            <div class="alert mt-2 p-2"
+                 style="background:#003B1A; color:#69F0AE; border:1px solid #1B5E20;
+                        border-radius:6px; font-size:0.9rem;">
+                ✔ {{ success }}
+            </div>
+            {% endif %}
+
             <form method="POST" class="mt-3">
                 <input type="hidden" name="action" value="update">
 
                 <div class="mb-3">
                     <label style="color:#C9AFAF;">Name</label>
                     <input name="name" class="form-control"
+                           style="background:#2A1C1C; color:#F8E9E9; border-color:#5C3A2E;"
                            value="{{ user.name }}" required>
                 </div>
 
                 <div class="mb-3">
                     <label style="color:#C9AFAF;">Email</label>
                     <input name="email" type="email" class="form-control"
+                           style="background:#2A1C1C; color:#F8E9E9; border-color:#5C3A2E;"
                            value="{{ user.email }}" required>
                 </div>
 
@@ -40,27 +50,75 @@
         </div>
     </div>
 
-    <!-- ── DELETE ACCOUNT ── -->
-    <div class="col-md-5 mb-4">
-        <div class="card card-dark p-4"
-             style="border-color:#8B2E2E;">
+    <!-- ── CHANGE PASSWORD ── -->
+    <div class="col-md-5">
+        <div class="card card-dark p-4">
+            <h4 style="color:#F8E9E9;">🔒 Change Password</h4>
 
+            {% if pw_error %}
+            <div class="alert mt-2 p-2"
+                 style="background:#3B0000; color:#FF8A80; border:1px solid #8B2E2E;
+                        border-radius:6px; font-size:0.9rem;">
+                ⚠ {{ pw_error }}
+            </div>
+            {% endif %}
+
+            {% if pw_success %}
+            <div class="alert mt-2 p-2"
+                 style="background:#003B1A; color:#69F0AE; border:1px solid #1B5E20;
+                        border-radius:6px; font-size:0.9rem;">
+                ✔ {{ pw_success }}
+            </div>
+            {% endif %}
+
+            <form method="POST" class="mt-3">
+                <input type="hidden" name="action" value="change_password">
+
+                <div class="mb-3">
+                    <label style="color:#C9AFAF;">Current Password</label>
+                    <input name="current_password" type="password" class="form-control"
+                           style="background:#2A1C1C; color:#F8E9E9; border-color:#5C3A2E;"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label style="color:#C9AFAF;">New Password</label>
+                    <input name="new_password" type="password" class="form-control"
+                           style="background:#2A1C1C; color:#F8E9E9; border-color:#5C3A2E;"
+                           id="newPw" required minlength="6">
+                </div>
+
+                <div class="mb-3">
+                    <label style="color:#C9AFAF;">Confirm New Password</label>
+                    <input name="confirm_password" type="password" class="form-control"
+                           style="background:#2A1C1C; color:#F8E9E9; border-color:#5C3A2E;"
+                           id="confirmPw" required minlength="6">
+                    <div id="pw-match-msg" style="font-size:0.8rem; margin-top:4px;"></div>
+                </div>
+
+                <button class="btn btn-burgundy w-100" id="pw-submit-btn">
+                    🔑 Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── DELETE ACCOUNT ── -->
+    <div class="col-md-10">
+        <div class="card card-dark p-4" style="border-color:#8B2E2E;">
             <h4 style="color:#F8E9E9;">Delete Account</h4>
             <p style="color:#C9AFAF; font-size:0.9rem;">
                 This will permanently delete your account and all associated
                 projects, submissions, and logs. This cannot be undone.
             </p>
 
-            <!-- Confirm toggle -->
             <div id="delete-confirm" style="display:none;">
                 <p style="color:#FF8A80; font-size:0.9rem; font-weight:bold;">
                     Are you sure? All your data will be lost.
                 </p>
-                <form method="POST" class="d-flex gap-2">
+                <form method="POST" class="d-flex gap-2" style="max-width:320px;">
                     <input type="hidden" name="action" value="delete">
-                    <button class="btn btn-danger w-50">
-                        Yes, Delete
-                    </button>
+                    <button class="btn btn-danger w-50">Yes, Delete</button>
                     <button type="button" class="btn btn-secondary w-50"
                             onclick="document.getElementById('delete-confirm').style.display='none';
                                      document.getElementById('delete-btn').style.display='block';">
@@ -69,17 +127,47 @@
                 </form>
             </div>
 
-            <button id="delete-btn" class="btn btn-outline-danger w-100"
+            <button id="delete-btn" class="btn btn-outline-danger"
+                    style="max-width:200px;"
                     onclick="document.getElementById('delete-confirm').style.display='block';
                              this.style.display='none';">
                 🗑 Delete My Account
             </button>
-
         </div>
     </div>
 
 </div>
 
-<a href="/dashboard" class="btn btn-secondary">← Dashboard</a>
+<div class="mt-3">
+    <a href="/dashboard" class="btn btn-secondary">← Dashboard</a>
+</div>
+
+<script>
+    // Live confirm-password match indicator
+    const newPw     = document.getElementById('newPw');
+    const confirmPw = document.getElementById('confirmPw');
+    const msg       = document.getElementById('pw-match-msg');
+    const submitBtn = document.getElementById('pw-submit-btn');
+
+    function checkMatch() {
+        if (confirmPw.value === '') {
+            msg.textContent = '';
+            submitBtn.disabled = false;
+            return;
+        }
+        if (newPw.value === confirmPw.value) {
+            msg.textContent = '✔ Passwords match';
+            msg.style.color = '#69F0AE';
+            submitBtn.disabled = false;
+        } else {
+            msg.textContent = '✘ Passwords do not match';
+            msg.style.color = '#FF8A80';
+            submitBtn.disabled = true;
+        }
+    }
+
+    newPw.addEventListener('input', checkMatch);
+    confirmPw.addEventListener('input', checkMatch);
+</script>
 
 {% endblock %}

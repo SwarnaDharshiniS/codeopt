@@ -1,43 +1,80 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="fw-bold mb-4" style="color:#F8E9E9;">
-    📊 Analytics
-</h2>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <h2 class="fw-bold mb-0" style="color:#F8E9E9;">📊 Analytics</h2>
 
-<!-- ── Summary Cards ── -->
+    <!-- Scope toggle -->
+    <div class="d-flex gap-2 align-items-center">
+        <span style="color:#C9AFAF; font-size:0.9rem;">Showing:</span>
+        <a href="/analytics?scope=me"
+           class="btn btn-sm {% if scope == 'me' %}btn-burgundy{% else %}btn-outline-burgundy{% endif %}">
+            My Runs
+        </a>
+        <a href="/analytics?scope=all"
+           class="btn btn-sm {% if scope == 'all' %}btn-burgundy{% else %}btn-outline-burgundy{% endif %}">
+            All Users
+        </a>
+
+        <!-- Export -->
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-burgundy dropdown-toggle"
+                    data-bs-toggle="dropdown">⬇ Export CSV</button>
+            <ul class="dropdown-menu" style="background:#2A1C1C; border-color:#5C3A2E;">
+                <li>
+                    <a class="dropdown-item" style="color:#F8E9E9;"
+                       href="/analytics/export?type=all&scope={{ scope }}">All Stats</a>
+                </li>
+                <li>
+                    <a class="dropdown-item" style="color:#F8E9E9;"
+                       href="/analytics/export?type=lang&scope={{ scope }}">Language Stats</a>
+                </li>
+                <li>
+                    <a class="dropdown-item" style="color:#F8E9E9;"
+                       href="/analytics/export?type=opt&scope={{ scope }}">Optimization Stats</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Scope label -->
+<p style="color:#C9AFAF; font-size:0.88rem; margin-top:-8px; margin-bottom:20px;">
+    {% if scope == 'me' %}
+        Showing stats for <strong style="color:#F8E9E9;">your submissions only</strong>.
+    {% else %}
+        Showing stats aggregated across <strong style="color:#F8E9E9;">all users</strong>.
+    {% endif %}
+</p>
+
+<!-- Summary Cards -->
 <div class="row mb-4">
-
     <div class="col-md-4 mb-3">
         <div class="card card-dark p-4 text-center">
             <h3 style="color:#8B2E2E;">{{ total_exec }}</h3>
             <p style="color:#C9AFAF;">Normal Runs Logged</p>
         </div>
     </div>
-
     <div class="col-md-4 mb-3">
         <div class="card card-dark p-4 text-center">
             <h3 style="color:#8B2E2E;">{{ total_opt }}</h3>
             <p style="color:#C9AFAF;">Optimization Runs Logged</p>
         </div>
     </div>
-
     <div class="col-md-4 mb-3">
         <div class="card card-dark p-4 text-center">
             <h3 style="color:#8B2E2E;">{{ best_opt }}</h3>
             <p style="color:#C9AFAF;">Fastest Optimization Level</p>
         </div>
     </div>
-
 </div>
 
 <div class="row">
 
-    <!-- ── Avg Time per Language ── -->
+    <!-- Avg Time per Language -->
     <div class="col-md-6 mb-4">
         <div class="card card-dark p-4">
             <h4 style="color:#F8E9E9;">⏱ Avg Exec Time by Language</h4>
-
             <table class="table mt-3">
                 <thead>
                     <tr>
@@ -54,63 +91,39 @@
                         <td>{{ row.total_runs }}</td>
                     </tr>
                     {% else %}
-                    <tr>
-                        <td colspan="3">No data yet.</td>
-                    </tr>
+                    <tr><td colspan="3" style="color:#C9AFAF;">No data yet.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- ── Avg Time per Optimization Flag ── -->
+    <!-- Avg Metrics per Opt Flag -->
     <div class="col-md-6 mb-4">
         <div class="card card-dark p-4">
             <h4 style="color:#F8E9E9;">⚡ Avg Metrics by Optimization Flag</h4>
-                <table class="table mt-3">
-                    <thead>
-                        <tr >
-                            <th>⚙ Flag</th>
-                            <th>⏱ Avg Time (ms)</th>
-                            <th>💾 Avg Size (KB)</th>
-                            <th>🔁 Runs</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {% for row in opt_stats %}
-                        <tr>
-                            
-                            <!-- Flag -->
-                            <td style="color:#8B2E2E; font-weight:bold;">
-                                {{ row._id }}
-                            </td>
-
-                            <!-- Time -->
-                            <td>
-                                {{ "%.1f" | format(row.avg_time_ms or 0) }}
-                            </td>
-
-                            <!-- Size -->
-                            <td>
-                                {{ "%.1f" | format(row.avg_size_kb or 0) }}
-                            </td>
-
-                            <!-- Runs -->
-                            <td>
-                                {{ row.total_runs }}
-                            </td>
-
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" style="text-align:center;">
-                                No data yet.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>⚙ Flag</th>
+                        <th>⏱ Avg Time (ms)</th>
+                        <th>💾 Avg Size (KB)</th>
+                        <th>🔁 Runs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in opt_stats %}
+                    <tr>
+                        <td style="color:#8B2E2E; font-weight:bold;">{{ row._id }}</td>
+                        <td>{{ "%.1f" | format(row.avg_time_ms or 0) }}</td>
+                        <td>{{ "%.1f" | format(row.avg_size_kb or 0) }}</td>
+                        <td>{{ row.total_runs }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" style="color:#C9AFAF; text-align:center;">No data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 

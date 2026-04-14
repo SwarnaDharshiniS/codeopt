@@ -1,32 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="fw-bold mb-1" style="color:#F8E9E9;">
-    📈 Performance Evolution
-</h2>
+<h2 class="fw-bold mb-1" style="color:#F8E9E9;">📈 Performance Evolution</h2>
 <p style="color:#C9AFAF;">{{ project.project_name }}</p>
 
-<a href="/submissions/{{ project.project_id }}"
-   class="btn btn-secondary mb-4">← Submissions</a>
+<a href="/submissions/{{ project.project_id }}" class="btn btn-secondary mb-4">← Submissions</a>
 
 {% if path %}
+
 <p style="color:#C9AFAF; font-size:0.85rem; margin-bottom:20px;">
-    Showing {{ path | length }} submission(s) in evolution order —
-    arrows show improvement (green = faster, red = slower).
+    Showing {{ path | length }} submission(s) in evolution order.
+    Green = faster than previous, red = slower.
 </p>
 
-<!-- Evolution Timeline -->
 <div class="card card-dark p-4">
     {% for step in path %}
 
-    <!-- Submission Node -->
+    <!-- Submission node -->
     <div class="d-flex align-items-start gap-3 mb-2">
-
-        <!-- Circle -->
         <div style="width:14px; height:14px; border-radius:50%;
                     background:#8B2E2E; margin-top:4px; flex-shrink:0;"></div>
-
-        <!-- Content -->
         <div style="flex:1; background:#1F1414; border-radius:8px;
                     padding:12px 16px; border:1px solid #3A2020;">
             <div class="d-flex justify-content-between">
@@ -38,12 +31,16 @@
                 </span>
             </div>
             <div style="color:#C9AFAF; font-size:0.85rem; margin-top:4px;">
-                ⏱ {{ step.exec_ms }} ms
+                {% if step.exec_ms %}
+                    ⏱ {{ step.exec_ms }} ms
+                {% else %}
+                    ⏱ <span style="color:#666;">Not run yet</span>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Arrow + Improvement (between nodes) -->
+    <!-- Arrow + delta between nodes -->
     {% if not loop.last %}
     <div class="d-flex align-items-center gap-3 mb-2" style="margin-left:3px;">
         <div style="width:8px; border-left:2px dashed #5C3A2E; height:30px; margin-left:3px;"></div>
@@ -56,7 +53,7 @@
                 ▼ {{ (step.improvement_ms * -1) }} ms slower
             {% else %}
                 background:#1F1414; color:#C9AFAF; border:1px solid #3A2020;">
-                — no data yet
+                — run both submissions to see delta
             {% endif %}
         </div>
     </div>
@@ -66,13 +63,25 @@
 </div>
 
 {% else %}
-<div class="card card-dark p-4">
-    <p style="color:#C9AFAF;">
-        No evolution chain yet. Create multiple submissions in this
-        project with the same language — they'll be linked automatically
-        after running.
-    </p>
-</div>
-{% endif %}
 
+<div class="card card-dark p-4" style="border-left:3px solid #8B2E2E;">
+    <h5 style="color:#F8E9E9;">No evolution chain found for this project yet.</h5>
+    <p style="color:#C9AFAF; font-size:0.9rem; margin-top:8px;">
+        Evolution tracks how successive submissions in the same project improve
+        (or regress) over time. It links submissions of the same language automatically.
+    </p>
+    <p style="color:#C9AFAF; font-size:0.9rem;">To build an evolution chain:</p>
+    <ol style="color:#C9AFAF; font-size:0.9rem; line-height:2;">
+        <li>Create <strong style="color:#F8E9E9;">at least 2 submissions</strong> in this project with the <strong style="color:#F8E9E9;">same language</strong>.</li>
+        <li>Click <strong style="color:#F8E9E9;">▶ Run Normally</strong> on each one — this sets the timing data used for comparison.</li>
+        <li>Come back here — the chain will appear automatically.</li>
+    </ol>
+    <div class="mt-3">
+        <a href="/submissions/{{ project.project_id }}" class="btn btn-burgundy">
+            Go to Submissions →
+        </a>
+    </div>
+</div>
+
+{% endif %}
 {% endblock %}

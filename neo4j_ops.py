@@ -319,8 +319,88 @@ def neo4j_get_best_opt_across_project(project_id):
 
 
 # ============================================================
-# FEATURE 2 — OPTIMIZATION RECOMMENDATION (COLLABORATIVE)
+# FEATURE 2 — GRAPH-BASED ANALYTICS
 # ============================================================
+
+def neo4j_get_graph_analytics():
+    """
+    Multi-level aggregation across all users and submissions:
+    - Avg exec time per optimization profile (global)
+    - Which profile is most popular across users
+    - Language distribution across all submissions
+    - Most active users by submission count
+    - Users sharing similar submissions (cross-user links)
+    """
+    driver  = get_neo4j_driver()
+    results = {}
+
+    with driver.session() as s:
+
+        # 1. Avg exec time per opt profile (global, across all users)
+        r1 = s.run("""
+            MATCH ()-[r:RAN_WITH]->(op:OptimizationProfile)
+            WHERE r.exec_time_ms IS NOT NULL AND r.exec_time_ms > 0
+            RETURN
+                op.compiler_flags AS flag,
+                op.profile_name   AS profile_name,
+                avg(r.exec_time_ms)  AS avg_time_ms,
+                avg(r.file_size_kb)  AS avg_size_kb,
+                count(r)             AS total_runs
+            ORDER BY avg_time_ms ASC
+        """)
+        results["opt_performance"] = [dict(rec) for rec in r1]
+
+        # 2. Most popular opt profiles (by user count)
+        r2 = s.run("""
+            MATCH (u:User)-[r:USED]->(op:OptimizationProfile)
+            RETURN
+                op.compiler_flags AS flag,
+                op.profile_name   AS profile_name,
+                count(DISTINCT u) AS user_count,
+                sum(r.use_count)  AS total_uses
+            ORDER BY total_uses DESC
+        """)
+        results["popular_profiles"] = [dict(rec) for rec in r2]
+
+        # 3. Language distribution across ALL submissions
+        r3 = s.run("""
+            MATCH (s:Submission)
+            WHERE s.language IS NOT NULL
+            RETURN s.language AS language, count(s) AS count
+            ORDER BY count DESC
+        """)
+        results["language_dist"] = [dict(rec) for rec in r3]
+
+        # 4. Most active users (by submission count)
+        r4 = s.run("""
+            MATCH (u:User)-[:OWNS]->(:Project)-[:HAS_SUBMISSION]->(s:Submission)
+            RETURN
+                u.user_id AS user_id,
+                u.name    AS name,
+                count(s)  AS submission_count
+            ORDER BY submission_count DESC
+            LIMIT 10
+        """)
+        results["active_users"] = [dict(rec) for rec in r4]
+
+        # 5. Cross-user similarity connections
+        r5 = s.run("""
+            MATCH (u1:User)-[:OWNS]->(:Project)-[:HAS_SUBMISSION]->
+                  (s1:Submission)-[sim:SIMILAR_TO]->(s2:Submission)
+                  <-[:HAS_SUBMISSION]-(:Project)<-[:OWNS]-(u2:User)
+            WHERE u1.user_id <> u2.user_id
+            RETURN
+                u1.name AS user1,
+                u2.name AS user2,
+                count(sim) AS shared_similar_submissions,
+                avg(sim.score) AS avg_similarity
+            ORDER BY shared_similar_submissions DESC
+            LIMIT 10
+        """)
+        results["user_connections"] = [dict(rec) for rec in r5]
+
+    driver.close()
+    return results
 
 def neo4j_record_user_used_profile(user_id, profile_id,
                                     profile_name, compiler_flags):
@@ -347,47 +427,6 @@ def neo4j_record_user_used_profile(user_id, profile_id,
         pname=profile_name, flags=compiler_flags,
         now=str(datetime.utcnow()))
     driver.close()
-
-
-def neo4j_get_recommendations_for_user(user_id):
-    """
-    Collaborative filtering:
-    Find OptimizationProfiles used by users who have SIMILAR_TO
-    submissions as the current user, ranked by popularity.
-    Also returns profiles the current user has NOT used yet.
-    """
-    driver = get_neo4j_driver()
-    results = []
-    with driver.session() as s:
-        records = s.run("""
-            // My submissions
-            MATCH (me:User {user_id: $uid})-[:OWNS]->(:Project)
-                  -[:HAS_SUBMISSION]->(my_sub:Submission)
-
-            // Similar submissions from other users
-            MATCH (my_sub)-[:SIMILAR_TO]->(their_sub:Submission)
-                  <-[:HAS_SUBMISSION]-(:Project)<-[:OWNS]-(other:User)
-            WHERE other.user_id <> $uid
-
-            // What opt profiles did those users use?
-            MATCH (other)-[u:USED]->(op:OptimizationProfile)
-
-            // Profiles current user has NOT used yet
-            WHERE NOT (me)-[:USED]->(op)
-
-            RETURN
-                op.profile_name   AS profile_name,
-                op.compiler_flags AS compiler_flags,
-                count(DISTINCT other) AS used_by_similar_users,
-                avg(u.use_count)  AS avg_use_count
-            ORDER BY used_by_similar_users DESC, avg_use_count DESC
-            LIMIT 5
-        """, uid=user_id)
-        for rec in records:
-            results.append(dict(rec))
-    driver.close()
-    return results
-
 
 def neo4j_get_popular_profiles_globally():
     """
@@ -651,88 +690,3 @@ def neo4j_link_evolution_on_new_submission(project_id, new_submission_id,
         return prev["sid"]
 
     return None
-
-
-# ============================================================
-# FEATURE 5 — GRAPH-BASED ANALYTICS
-# ============================================================
-
-def neo4j_get_graph_analytics():
-    """
-    Multi-level aggregation across all users and submissions:
-    - Avg exec time per optimization profile (global)
-    - Which profile is most popular across users
-    - Language distribution across all submissions
-    - Most active users by submission count
-    - Users sharing similar submissions (cross-user links)
-    """
-    driver  = get_neo4j_driver()
-    results = {}
-
-    with driver.session() as s:
-
-        # 1. Avg exec time per opt profile (global, across all users)
-        r1 = s.run("""
-            MATCH ()-[r:RAN_WITH]->(op:OptimizationProfile)
-            WHERE r.exec_time_ms IS NOT NULL AND r.exec_time_ms > 0
-            RETURN
-                op.compiler_flags AS flag,
-                op.profile_name   AS profile_name,
-                avg(r.exec_time_ms)  AS avg_time_ms,
-                avg(r.file_size_kb)  AS avg_size_kb,
-                count(r)             AS total_runs
-            ORDER BY avg_time_ms ASC
-        """)
-        results["opt_performance"] = [dict(rec) for rec in r1]
-
-        # 2. Most popular opt profiles (by user count)
-        r2 = s.run("""
-            MATCH (u:User)-[r:USED]->(op:OptimizationProfile)
-            RETURN
-                op.compiler_flags AS flag,
-                op.profile_name   AS profile_name,
-                count(DISTINCT u) AS user_count,
-                sum(r.use_count)  AS total_uses
-            ORDER BY total_uses DESC
-        """)
-        results["popular_profiles"] = [dict(rec) for rec in r2]
-
-        # 3. Language distribution across ALL submissions
-        r3 = s.run("""
-            MATCH (s:Submission)
-            WHERE s.language IS NOT NULL
-            RETURN s.language AS language, count(s) AS count
-            ORDER BY count DESC
-        """)
-        results["language_dist"] = [dict(rec) for rec in r3]
-
-        # 4. Most active users (by submission count)
-        r4 = s.run("""
-            MATCH (u:User)-[:OWNS]->(:Project)-[:HAS_SUBMISSION]->(s:Submission)
-            RETURN
-                u.user_id AS user_id,
-                u.name    AS name,
-                count(s)  AS submission_count
-            ORDER BY submission_count DESC
-            LIMIT 10
-        """)
-        results["active_users"] = [dict(rec) for rec in r4]
-
-        # 5. Cross-user similarity connections
-        r5 = s.run("""
-            MATCH (u1:User)-[:OWNS]->(:Project)-[:HAS_SUBMISSION]->
-                  (s1:Submission)-[sim:SIMILAR_TO]->(s2:Submission)
-                  <-[:HAS_SUBMISSION]-(:Project)<-[:OWNS]-(u2:User)
-            WHERE u1.user_id <> u2.user_id
-            RETURN
-                u1.name AS user1,
-                u2.name AS user2,
-                count(sim) AS shared_similar_submissions,
-                avg(sim.score) AS avg_similarity
-            ORDER BY shared_similar_submissions DESC
-            LIMIT 10
-        """)
-        results["user_connections"] = [dict(rec) for rec in r5]
-
-    driver.close()
-    return results

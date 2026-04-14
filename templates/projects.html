@@ -1,113 +1,131 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="fw-bold mb-4" style="color:#F8E9E9;">
-    📁 Your Projects
-</h2>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="fw-bold mb-0" style="color:#F8E9E9;">📁 Your Projects</h2>
+    <button class="btn btn-burgundy"
+            onclick="document.getElementById('create-form').style.display='block'; this.style.display='none';">
+        + New Project
+    </button>
+</div>
 
-<!-- Create Project Form -->
-<div class="card card-dark p-4 mb-4">
-    <h4 class="mb-3" style="color:#F8E9E9;">Create New Project</h4>
-
+<!-- Create Project Form (hidden until button clicked) -->
+<div id="create-form" style="display:none;" class="card card-dark p-4 mb-4">
+    <h5 style="color:#F8E9E9;" class="mb-3">Create New Project</h5>
     <form method="POST">
-        <div class="row">
-
-            <div class="col-md-3 mb-3">
-                <label>User</label>
-                <select name="user_id" class="form-control" required>
-                    {% for u in users %}
-                    <option value="{{ u.user_id }}">{{ u.name }}</option>
-                    {% endfor %}
-                </select>
+        <div class="row align-items-end g-2">
+            <div class="col-md-8">
+                <label style="color:#C9AFAF; font-size:0.9rem;">Project Name</label>
+                <input class="form-control"
+                       style="background:#2A1C1C; color:#F8E9E9; border-color:#5C3A2E;"
+                       name="project_name"
+                       placeholder="e.g., Sorting Algorithm Benchmarks"
+                       required autofocus>
             </div>
-
-            <div class="col-md-6 mb-3">
-                <label>Project Name</label>
-                <input class="form-control" name="project_name"
-                       placeholder="e.g., Sorting Optimization Analyzer" required>
-            </div>
-
-            <div class="col-md-3 mb-3 d-flex align-items-end">
+            <div class="col-md-2">
                 <button class="btn btn-burgundy w-100">Create</button>
             </div>
-
+            <div class="col-md-2">
+                <button type="button" class="btn btn-secondary w-100"
+                        onclick="document.getElementById('create-form').style.display='none';
+                                 document.querySelector('.btn-burgundy[onclick]').style.display='inline-block';">
+                    Cancel
+                </button>
+            </div>
         </div>
     </form>
 </div>
 
-<hr style="border-color:#5C3A2E;">
-
-<h3 class="mt-4 mb-3" style="color:#F8E9E9;">
-    Your Project List
-</h3>
-
-<!-- Project Cards Grid -->
+<!-- Project Cards -->
+{% if projects %}
 <div class="row">
-
     {% for p in projects %}
     <div class="col-md-4 mb-4">
-        <div class="card card-dark p-4 h-100">
+        <div class="card card-dark p-4 h-100 d-flex flex-column">
 
-            <h4 class="fw-bold mb-2" style="color:#8B2E2E;">
+            <h4 class="fw-bold mb-1" style="color:#8B2E2E;">
                 {{ p.project_name }}
             </h4>
-
-            <p style="color:#C9AFAF; font-size:0.9rem;">
-                👤 Owner: <strong>{{ p.name }}</strong><br>
-                🆔 Project ID: <strong>{{ p.project_id }}</strong><br>
+            <p style="color:#C9AFAF; font-size:0.85rem; margin-bottom:16px;">
                 📅 Created: {{ p.created_at if p.created_at else "—" }}
             </p>
 
-            <div class="mt-auto d-flex">
-                <a class="btn btn-burgundy w-100"
+            <!-- Primary action -->
+            <div class="mt-auto">
+                <a class="btn btn-burgundy w-100 mb-2"
                    href="/submissions/{{ p.project_id }}">
-                    Open Project →
+                    Open →
                 </a>
+
+                <!-- Secondary actions -->
+                <div class="d-flex gap-2">
+                    <a href="/best_opt/project/{{ p.project_id }}"
+                       class="btn btn-outline-burgundy btn-sm flex-fill"
+                       title="Best optimization across this project">🏆</a>
+                    <a href="/evolution/{{ p.project_id }}"
+                       class="btn btn-outline-burgundy btn-sm flex-fill"
+                       title="Evolution timeline">📈</a>
+                    <button class="btn btn-outline-burgundy btn-sm flex-fill"
+                            title="Rename"
+                            onclick="document.getElementById('rename-{{p.project_id}}').style.display='block';
+                                     document.getElementById('actions-{{p.project_id}}').style.display='none';">
+                        ✏
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm flex-fill"
+                            title="Delete"
+                            onclick="document.getElementById('delete-{{p.project_id}}').style.display='block';
+                                     document.getElementById('actions-{{p.project_id}}').style.display='none';">
+                        🗑
+                    </button>
+                </div>
+                <div id="actions-{{ p.project_id }}"></div>
             </div>
 
-            <!-- Rename form (hidden) -->
+            <!-- Rename form -->
             <div id="rename-{{ p.project_id }}" style="display:none;" class="mt-2">
-                <form method="POST" action="/projects/{{ p.project_id }}/edit" class="d-flex gap-2">
+                <form method="POST" action="/projects/{{ p.project_id }}/edit"
+                      class="d-flex gap-2">
                     <input name="project_name" class="form-control form-control-sm"
+                           style="background:#2A1C1C; color:#F8E9E9; border-color:#5C3A2E;"
                            value="{{ p.project_name }}" required>
                     <button class="btn btn-burgundy btn-sm">Save</button>
                     <button type="button" class="btn btn-secondary btn-sm"
-                            onclick="document.getElementById('rename-{{p.project_id}}').style.display='none';document.getElementById('actions-{{p.project_id}}').style.display='flex';">✕</button>
+                            onclick="document.getElementById('rename-{{p.project_id}}').style.display='none';">
+                        ✕
+                    </button>
                 </form>
             </div>
 
-            <!-- Delete confirm (hidden) -->
+            <!-- Delete confirm -->
             <div id="delete-{{ p.project_id }}" style="display:none;" class="mt-2">
-                <p style="color:#FF8A80;font-size:0.85rem;margin-bottom:6px;">
-                    Delete this project and all its submissions?
+                <p style="color:#FF8A80; font-size:0.85rem; margin-bottom:6px;">
+                    Delete <strong>{{ p.project_name }}</strong> and all its submissions?
                 </p>
-                <form method="POST" action="/projects/{{ p.project_id }}/delete" class="d-flex gap-2">
+                <form method="POST" action="/projects/{{ p.project_id }}/delete"
+                      class="d-flex gap-2">
                     <button class="btn btn-danger btn-sm w-50">Yes, Delete</button>
                     <button type="button" class="btn btn-secondary btn-sm w-50"
-                            onclick="document.getElementById('delete-{{p.project_id}}').style.display='none';document.getElementById('actions-{{p.project_id}}').style.display='flex';">Cancel</button>
+                            onclick="document.getElementById('delete-{{p.project_id}}').style.display='none';">
+                        Cancel
+                    </button>
                 </form>
-            </div>
-
-            <!-- Action buttons -->
-            <div id="actions-{{ p.project_id }}" class="d-flex gap-2 mt-2">
-                <button class="btn btn-outline-burgundy btn-sm w-50"
-                        onclick="document.getElementById('rename-{{p.project_id}}').style.display='block';this.closest('.d-flex').style.display='none';">
-                    ✏ Rename
-                </button>
-                <button class="btn btn-outline-danger btn-sm w-50"
-                        onclick="document.getElementById('delete-{{p.project_id}}').style.display='block';this.closest('.d-flex').style.display='none';">
-                    🗑 Delete
-                </button>
             </div>
 
         </div>
     </div>
     {% endfor %}
-
-    {% if projects|length == 0 %}
-    <p style="color:#C9AFAF;">No projects yet. Create one above!</p>
-    {% endif %}
-
 </div>
+
+{% else %}
+<div class="card card-dark p-5 text-center">
+    <p style="color:#C9AFAF; font-size:1rem; margin-bottom:16px;">
+        No projects yet. Create your first one to get started.
+    </p>
+    <button class="btn btn-burgundy"
+            onclick="document.getElementById('create-form').style.display='block'; this.style.display='none';">
+        + Create First Project
+    </button>
+</div>
+{% endif %}
 
 {% endblock %}

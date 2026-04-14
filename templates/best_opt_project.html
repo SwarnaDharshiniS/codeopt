@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-1" style="color:#F8E9E9;">
+    ⚡ Best Optimizations (Project Level)
+</h2>
+
+<p style="color:#C9AFAF;">
+    {{ project.project_name }}
+</p>
+
+<div class="d-flex gap-2 mb-4">
+    <a href="/submissions/{{ project.project_id }}" class="btn btn-secondary">← Back</a>
+</div>
+
+{% if summary %}
+
+<div class="card card-dark p-4 mb-4">
+    <h4 style="color:#F8E9E9;">📊 Best Optimization per Submission</h4>
+
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th>Submission</th>
+                <th>Language</th>
+                <th>Best Flag</th>
+                <th>Profile</th>
+                <th>Time (ms)</th>
+                <th>Size (KB)</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for s in summary %}
+            <tr>
+                <td style="color:#F8E9E9;">
+                    {{ s.submission_name or ("Submission " ~ s.submission_id) }}
+                </td>
+
+                <td>{{ s.language | upper }}</td>
+
+                <td style="color:#8B2E2E; font-weight:bold;">
+                    {{ s.best_flag }}
+                </td>
+
+                <td>{{ s.best_profile }}</td>
+
+                <td>
+                    {{ s.best_time_ms }}
+                    <span style="color:#8B2E2E; font-size:0.75rem;">ms</span>
+                </td>
+
+                <td>{{ s.best_size_kb }}</td>
+
+                <td>
+                    <a href="/best_opt/{{ s.submission_id }}" 
+                       class="btn btn-sm btn-outline-burgundy">
+                        View →
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+
+<div class="card card-dark p-4" style="border-left:3px solid #8B2E2E;">
+    <h5 style="color:#F8E9E9;">No optimization data found.</h5>
+    <p style="color:#C9AFAF;">
+        Run optimized submissions to populate this view.
+    </p>
+</div>
+
+{% endif %}
+
+{% endblock %}

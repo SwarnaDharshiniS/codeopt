@@ -1,54 +1,92 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="fw-bold mb-4" style="color:#F8E9E9;">
-    ▶ Run Result — <span style="color:#8B2E2E;">{{ submission.submission_name or ("Submission " ~ submission.submission_id) }}</span>
+<h2 class="fw-bold mb-1" style="color:#F8E9E9;">
+    ▶ Run Result —
+    <span style="color:#8B2E2E;">
+        {{ submission.submission_name or ("Submission " ~ submission.submission_id) }}
+    </span>
 </h2>
+<p style="color:#C9AFAF; font-size:0.88rem; margin-bottom:20px;">
+    {{ submission.language | upper }} &nbsp;·&nbsp;
+    Exit code:
+    {% if return_code == 0 %}
+        <span style="color:#69F0AE;">✔ 0 (success)</span>
+    {% else %}
+        <span style="color:#FF5252;">✘ {{ return_code }}</span>
+    {% endif %}
+    &nbsp;·&nbsp; {{ exec_time }} ms
+</p>
 
 <div class="row">
 
-    <!-- LEFT COLUMN: Execution Output -->
+    <!-- LEFT: Output -->
     <div class="col-md-8">
-
         <div class="card card-dark p-4 mb-4">
-            <h4 style="color:#F8E9E9;">Execution Output</h4>
-
-            <pre class="p-3"
-                 style="background:#1F1414; color:#F8E9E9; border-radius:10px;
-                        max-height:500px; overflow-y:auto; white-space:pre-wrap;">
-{{ output or "(No output)" }}
-            </pre>
+            <h5 style="color:#F8E9E9;" class="mb-3">Execution Output</h5>
+            <pre style="background:#1F1414; color:#F8E9E9; border-radius:8px;
+                        max-height:420px; overflow-y:auto; white-space:pre-wrap;
+                        padding:14px; font-size:0.88rem; margin:0;">{{ output or "(No output)" }}</pre>
         </div>
 
-        <div class="card card-dark p-4 mb-4">
-            <h4 style="color:#F8E9E9;">Execution Details</h4>
-
-            <p style="color:#C9AFAF;">
-                <strong>Execution Time:</strong> {{ exec_time }} ms<br>
-                <strong>Exit Code:</strong> {{ return_code }}<br>
-                <strong>Binary Size:</strong> {{ file_size }} KB
-            </p>
+        <div class="card card-dark p-3 mb-4">
+            <div class="row text-center">
+                <div class="col-4">
+                    <div style="font-size:1.4rem; font-weight:bold; color:#F8E9E9;">{{ exec_time }} ms</div>
+                    <div style="color:#C9AFAF; font-size:0.8rem;">Execution Time</div>
+                </div>
+                <div class="col-4">
+                    <div style="font-size:1.4rem; font-weight:bold; color:#F8E9E9;">{{ file_size }} KB</div>
+                    <div style="color:#C9AFAF; font-size:0.8rem;">Binary Size</div>
+                </div>
+                <div class="col-4">
+                    <div style="font-size:1.4rem; font-weight:bold;
+                        {% if return_code == 0 %}color:#69F0AE;{% else %}color:#FF5252;{% endif %}">
+                        {{ return_code }}
+                    </div>
+                    <div style="color:#C9AFAF; font-size:0.8rem;">Exit Code</div>
+                </div>
+            </div>
         </div>
-
     </div>
 
-    <!-- RIGHT COLUMN: Submission Metadata -->
+    <!-- RIGHT: Actions -->
     <div class="col-md-4">
+        <div class="card card-dark p-4 mb-3">
+            <h5 style="color:#F8E9E9; margin-bottom:14px;">What's next?</h5>
 
-        <div class="card card-dark p-4">
-
-            <h4 style="color:#F8E9E9;">Submission Info</h4>
-
-            <p style="color:#C9AFAF;">
-                <strong>ID:</strong> {{ submission.submission_id }}<br>
-                <strong>Name:</strong> {{ submission.submission_name or "—" }}<br>
-                <strong>Language:</strong> {{ submission.language|upper }}<br>
-                <strong>Submitted At:</strong> {{ submission.submitted_at }}
-            </p>
-
+            <a href="/opt/{{ submission.submission_id }}"
+               class="btn btn-burgundy w-100 mb-2">
+                ⚡ Run Optimized
+            </a>
+            <a href="/best_opt/{{ submission.submission_id }}"
+               class="btn btn-outline-burgundy w-100 mb-2">
+                🏆 Best Optimization
+            </a>
+            <a href="/similar/{{ submission.submission_id }}"
+               class="btn btn-outline-burgundy w-100 mb-2">
+                🔗 Similar Submissions
+            </a>
+            <a href="/logs/{{ submission.submission_id }}"
+               class="btn btn-outline-burgundy w-100 mb-2">
+                📋 View Logs
+            </a>
             <a href="/submissions/{{ submission.project_id }}"
-               class="btn btn-outline-burgundy w-100 mt-3">← Back to Submissions</a>
+               class="btn btn-secondary w-100">
+                ← Back to Submissions
+            </a>
+        </div>
 
+        <div class="card card-dark p-3">
+            <p style="color:#C9AFAF; font-size:0.85rem; margin:0; line-height:1.8;">
+                <strong style="color:#F8E9E9;">ID:</strong> {{ submission.submission_id }}<br>
+                <strong style="color:#F8E9E9;">Name:</strong>
+                    {{ submission.submission_name or "—" }}<br>
+                <strong style="color:#F8E9E9;">Language:</strong>
+                    {{ submission.language | upper }}<br>
+                <strong style="color:#F8E9E9;">Submitted:</strong>
+                    {{ submission.submitted_at }}
+            </p>
         </div>
     </div>
 

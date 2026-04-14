@@ -88,6 +88,18 @@ def mysql_delete_user(user_id):
     conn.close()
 
 
+def mysql_get_all_project_ids_for_user(user_id):
+    """READ — list of project_ids owned by a user."""
+    conn   = get_mysql_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT project_id FROM projects WHERE user_id = %s", (user_id,)
+    )
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return [r["project_id"] for r in rows]
+
 # ============================================================
 # DASHBOARD STATS
 # ============================================================
@@ -356,18 +368,6 @@ def mysql_save_optimization_run(submission_id, profile_id,
     return run_id
 
 
-def mysql_delete_optimization_run(run_id):
-    """DELETE a single optimization run."""
-    conn   = get_mysql_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(
-        "DELETE FROM optimization_runs WHERE run_id = %s", (run_id,)
-    )
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-
 # ============================================================
 # EXECUTION ERROR LOG
 # ============================================================
@@ -425,3 +425,62 @@ def mysql_get_error_logs(submission_id):
     finally:
         cursor.close()
         conn.close()
+
+
+# ============================================================
+# PASSWORD
+# ============================================================
+
+def mysql_create_reset_token(user_id, token, expires_at):
+    """CREATE — store a password-reset token."""
+    conn   = get_mysql_connection()
+    cursor = conn.cursor(dictionary=True)
+    # Delete any existing unused token for this user first
+    cursor.execute(
+        "DELETE FROM reset_tokens WHERE user_id = %s", (user_id,)
+    )
+    cursor.execute(
+        "INSERT INTO reset_tokens (user_id, token, expires_at) VALUES (%s, %s, %s)",
+        (user_id, token, expires_at)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+ 
+ 
+def mysql_get_reset_token(token):
+    """READ — fetch a reset token row by token string."""
+    conn   = get_mysql_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT * FROM reset_tokens WHERE token = %s AND used = 0", (token,)
+    )
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return row
+ 
+ 
+def mysql_mark_token_used(token):
+    """UPDATE — mark a reset token as used."""
+    conn   = get_mysql_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(
+        "UPDATE reset_tokens SET used = 1 WHERE token = %s", (token,)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+ 
+def mysql_update_password(user_id, new_password_hash):
+    """UPDATE a user's password hash."""
+    conn   = get_mysql_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        UPDATE users
+        SET    password_hash = %s
+        WHERE  user_id = %s
+    """, (new_password_hash, user_id))
+    conn.commit()
+    cursor.close()
+    conn.close()

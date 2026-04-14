@@ -1,33 +1,38 @@
 {% extends "base.html" %}
 {% block content %}
 
+<!-- Highlight.js — loaded only on this page -->
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+
 <h2 class="fw-bold mb-4" style="color:#F8E9E9;">
     📝 Submissions — <span style="color:#8B2E2E;">{{ project.project_name }}</span>
 </h2>
 
 <div class="row">
 
-    <!-- LEFT COLUMN: Upload + History -->
+    <!-- LEFT: Upload + History -->
     <div class="col-md-5">
 
-        <!-- Upload Box -->
         <div class="card card-dark p-4 mb-4">
-
             <h4 style="color:#F8E9E9;">Upload / Paste Code</h4>
-
             <form method="POST" enctype="multipart/form-data">
 
-                <!-- Submission Name -->
                 <div class="mb-3">
                     <label style="color:#F8E9E9;">Submission Name (optional)</label>
                     <input name="submission_name" class="form-control"
+                           style="background:#2A1C1C;color:#F8E9E9;border-color:#5C3A2E;"
                            placeholder="e.g., Optimized Merge Sort">
                 </div>
 
-                <!-- Language -->
                 <div class="mb-3">
                     <label style="color:#F8E9E9;">Language</label>
-                    <select name="language" class="form-control" required>
+                    <select name="language" class="form-control"
+                            style="background:#2A1C1C;color:#F8E9E9;border-color:#5C3A2E;" required>
                         <option value="">-- Select --</option>
                         <option value="c">C</option>
                         <option value="cpp">C++</option>
@@ -35,58 +40,57 @@
                     </select>
                 </div>
 
-                <!-- Upload Code File -->
                 <div class="mb-3">
                     <label style="color:#F8E9E9;">Code File (optional)</label>
-                    <input type="file" class="form-control" name="code_file">
+                    <input type="file" class="form-control" name="code_file"
+                           style="background:#2A1C1C;color:#F8E9E9;border-color:#5C3A2E;">
                 </div>
 
-                <!-- Paste Code -->
                 <div class="mb-3">
-                    <label style="color:#F8E9E9;">Or Paste Code (required)</label>
+                    <label style="color:#F8E9E9;">Or Paste Code</label>
                     <textarea name="code_text" class="form-control" rows="6"
+                              style="background:#2A1C1C;color:#F8E9E9;border-color:#5C3A2E;"
                               placeholder="Paste your code here..."></textarea>
                 </div>
 
                 <h5 class="mt-4" style="color:#F8E9E9;">Test Input (optional)</h5>
 
-                <!-- Input file -->
                 <div class="mb-3">
                     <label style="color:#F8E9E9;">Test Case File</label>
-                    <input type="file" class="form-control" name="input_file">
+                    <input type="file" class="form-control" name="input_file"
+                           style="background:#2A1C1C;color:#F8E9E9;border-color:#5C3A2E;">
                 </div>
 
-                <!-- Input text -->
                 <div class="mb-3">
                     <label style="color:#F8E9E9;">Or Input Text</label>
-                    <textarea name="input_text" class="form-control"
-                              rows="4" placeholder="Enter test input..."></textarea>
+                    <textarea name="input_text" class="form-control" rows="4"
+                              style="background:#2A1C1C;color:#F8E9E9;border-color:#5C3A2E;"
+                              placeholder="Enter test input..."></textarea>
                 </div>
 
                 <button class="btn btn-burgundy w-100 mt-3">Save Submission</button>
             </form>
-
         </div>
 
-
-        <!-- Submission History -->
-        <h4 class="mt-4 mb-3" style="color:#F8E9E9;">📄 History</h4>
+        <!-- History header -->
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+            <h4 style="color:#F8E9E9;margin:0;">📄 History</h4>
+            <span style="color:#C9AFAF;font-size:0.85rem;">
+                {{ total }} submission{{ 's' if total != 1 else '' }}
+            </span>
+        </div>
 
         {% for s in submissions %}
         <div class="card card-dark p-3 mb-3">
-
             <div class="fw-bold" style="color:#F8E9E9;">
                 {{ s.submission_name or ("Submission " ~ s.submission_id) }}
             </div>
-
-            <div style="color:#C9AFAF; font-size:0.9rem;">
+            <div style="color:#C9AFAF;font-size:0.9rem;">
                 {{ s.language|upper }} • {{ s.submitted_at }}
             </div>
-
-            <a href="/submissions/{{ project.project_id }}?view={{ s.submission_id }}"
+            <a href="/submissions/{{ project.project_id }}?view={{ s.submission_id }}&page={{ page }}"
                class="btn btn-outline-burgundy mt-2 me-1">View →</a>
 
-            <!-- Delete confirm (inline) -->
             <div id="del-sub-{{ s.submission_id }}" style="display:none;" class="mt-2">
                 <p style="color:#FF8A80;font-size:0.82rem;margin-bottom:4px;">
                     Delete this submission and all its logs?
@@ -97,7 +101,9 @@
                     <button class="btn btn-danger btn-sm w-50">Yes</button>
                     <button type="button" class="btn btn-secondary btn-sm w-50"
                             onclick="document.getElementById('del-sub-{{s.submission_id}}').style.display='none';
-                                     document.getElementById('del-btn-{{s.submission_id}}').style.display='inline-block';">Cancel</button>
+                                     document.getElementById('del-btn-{{s.submission_id}}').style.display='inline-block';">
+                        Cancel
+                    </button>
                 </form>
             </div>
             <button id="del-btn-{{ s.submission_id }}"
@@ -105,82 +111,112 @@
                     onclick="document.getElementById('del-sub-{{s.submission_id}}').style.display='block';this.style.display='none';">
                 🗑 Delete
             </button>
-
         </div>
         {% endfor %}
 
-    </div>
-
-
-    <!-- RIGHT COLUMN: Selected Submission -->
-    <div class="col-md-7">
-
-        {% if selected %}
-        <div class="card card-dark p-4">
-
-            <h4 style="color:#F8E9E9;">
-                📌 {{ selected.submission_name or ("Submission " ~ selected.submission_id) }}
-            </h4>
-
-            <p style="color:#C9AFAF;">
-                Language: <strong>{{ selected.language|upper }}</strong><br>
-                Submitted at: {{ selected.submitted_at }}
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <nav class="mt-3">
+            <ul class="pagination justify-content-center" style="gap:4px;">
+                <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                    <a class="page-link" href="?page={{ page - 1 }}"
+                       style="background:#2A1C1C;border-color:#5C3A2E;color:#F8E9E9;">‹</a>
+                </li>
+                {% for p in range(1, total_pages + 1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    {% if p == page %}
+                    <a class="page-link" href="?page={{ p }}"
+                       style="background:#8B2E2E;border-color:#8B2E2E;color:#F8E9E9;">
+                    </a>
+                    {% else %}
+                    <a class="page-link" href="?page={{ p }}"
+                        style="background:#2A1C1C;border-color:#5C3A2E;color:#C9AFAF">
+                        {{ p }}
+                    </a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+                <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                    <a class="page-link" href="?page={{ page + 1 }}"
+                       style="background:#2A1C1C;border-color:#5C3A2E;color:#F8E9E9;">›</a>
+                </li>
+            </ul>
+            <p class="text-center" style="color:#C9AFAF;font-size:0.8rem;margin-top:4px;">
+                Page {{ page }} of {{ total_pages }}
             </p>
-
-            <h5 style="color:#F8E9E9;">Source Code</h5>
-            <pre class="p-3" style="background:#1F1414; color:#F8E9E9;
-            border-radius:10px; max-height:350px; overflow-y:auto;">
-{{ selected.source_code }}
-            </pre>
-
-            <!-- Run buttons -->
-            <div class="mt-3 d-flex gap-2">
-                <a href="/run/{{ selected.submission_id }}"
-                   class="btn btn-burgundy w-50">
-                    ▶ Run Normally
-                </a>
-                <a href="/opt/{{ selected.submission_id }}"
-                   class="btn btn-outline-burgundy w-50">
-                    ⚡ Run Optimized
-                </a>
-            </div>
-
-            <!-- Logs + Graph buttons -->
-            <div class="mt-2 d-flex gap-2">
-                <a href="/logs/{{ selected.submission_id }}"
-                   class="btn btn-secondary w-50">
-                    📋 View Logs
-                </a>
-                <a href="/compare/{{ selected.submission_id }}"
-                   class="btn btn-outline-burgundy w-50">
-                    📈 Compare Opt Runs
-                </a>
-            </div>
-
-            <!-- Advanced Neo4j buttons -->
-            <div class="mt-2 d-flex gap-2">
-                <a href="/best_opt/{{ selected.submission_id }}"
-                   class="btn btn-outline-burgundy w-33">
-                    🏆 Best Opt
-                </a>
-                <a href="/similar/{{ selected.submission_id }}"
-                   class="btn btn-outline-burgundy w-33">
-                    🔗 Similar
-                </a>
-                <a href="/evolution/{{ selected.project_id }}"
-                   class="btn btn-outline-burgundy w-33">
-                    📈 Evolution
-                </a>
-            </div>
-
-
-        </div>
-        {% else %}
-        <!-- No card shown -->
+        </nav>
         {% endif %}
 
     </div>
 
+
+    <!-- RIGHT: Selected Submission -->
+    <div class="col-md-7">
+        {% if selected %}
+        <div class="card card-dark p-4">
+
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                    <h4 style="color:#F8E9E9;margin:0;">
+                        📌 {{ selected.submission_name or ("Submission " ~ selected.submission_id) }}
+                    </h4>
+                    <p style="color:#C9AFAF;margin:6px 0 0;font-size:0.9rem;">
+                        Language: <strong>{{ selected.language|upper }}</strong>
+                        &nbsp;·&nbsp; Submitted: {{ selected.submitted_at }}
+                    </p>
+                </div>
+                <button onclick="copyCode(this)" class="btn btn-secondary btn-sm"
+                        style="height:fit-content;">📋 Copy Code</button>
+            </div>
+
+            <!-- Syntax-highlighted code -->
+            <div class="mt-3" style="border-radius:8px;overflow:hidden;border:1px solid #5C3A2E;max-height:400px;overflow-y:auto;">
+<pre style="margin:0;"><code id="code-block" class="language-{{ selected.language }}">{{ selected.source_code | e }}</code></pre>
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+                <a href="/run/{{ selected.submission_id }}"
+                   class="btn btn-burgundy w-50">▶ Run Normally</a>
+                <a href="/opt/{{ selected.submission_id }}"
+                   class="btn btn-outline-burgundy w-50">⚡ Run Optimized</a>
+            </div>
+            <div class="mt-2 d-flex gap-2">
+                <a href="/logs/{{ selected.submission_id }}"
+                   class="btn btn-secondary w-50">📋 View Logs</a>
+                <a href="/compare/{{ selected.submission_id }}"
+                   class="btn btn-outline-burgundy w-50">📈 Compare Opt Runs</a>
+            </div>
+            <div class="mt-2 d-flex gap-2">
+                <a href="/best_opt/{{ selected.submission_id }}"
+                   class="btn btn-outline-burgundy flex-fill">🏆 Best Opt</a>
+                <a href="/similar/{{ selected.submission_id }}"
+                   class="btn btn-outline-burgundy flex-fill">🔗 Similar</a>
+                <a href="/evolution/{{ selected.project_id }}"
+                   class="btn btn-outline-burgundy flex-fill">📈 Evolution</a>
+            </div>
+
+        </div>
+        {% endif %}
+    </div>
+
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('pre code').forEach(function (block) {
+        hljs.highlightElement(block);
+    });
+});
+
+function copyCode(btn) {
+    var code = document.getElementById('code-block');
+    if (!code) return;
+    navigator.clipboard.writeText(code.innerText).then(function () {
+        var orig = btn.textContent;
+        btn.textContent = '✔ Copied!';
+        setTimeout(function () { btn.textContent = orig; }, 2000);
+    });
+}
+</script>
 
 {% endblock %}

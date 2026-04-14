@@ -117,3 +117,20 @@ CREATE TABLE IF NOT EXISTS execution_error_log (
         REFERENCES code_submissions(submission_id)
         ON DELETE CASCADE
 );
+
+-- ============================================================
+-- 7. reset_tokens
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS reset_tokens (
+    token_id    INT AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT          NOT NULL,
+    token       VARCHAR(64)  NOT NULL UNIQUE,
+    expires_at  DATETIME     NOT NULL,
+    used        TINYINT(1)   DEFAULT 0,
+
+    CONSTRAINT fk_reset_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
+);

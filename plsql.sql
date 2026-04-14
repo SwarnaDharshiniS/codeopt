@@ -218,39 +218,18 @@ BEGIN
         (project_id, language, source_code, input_data, submission_name)
     VALUES
         (p_project_id, p_language, p_source_code, p_input_data, p_submission_name);
-
     SET p_submission_id = LAST_INSERT_ID();
+    IF p_submission_name IS NULL OR TRIM(p_submission_name) = '' THEN
+        UPDATE code_submissions
+        SET submission_name = CONCAT('Submission #', p_submission_id)
+        WHERE submission_id = p_submission_id;
+    END IF;
 END$$
 
 
 -- ============================================================
 -- SECTION 3 : TRIGGERS
 -- ============================================================
-
--- ------------------------------------------------------------
--- trg_before_submission_insert
---   If submission_name is NULL or blank, auto-generate a name
---   like "Submission #<id>" using the next AUTO_INCREMENT value.
--- ------------------------------------------------------------
-DROP TRIGGER IF EXISTS trg_before_submission_insert$$
-CREATE TRIGGER trg_before_submission_insert
-BEFORE INSERT ON code_submissions
-FOR EACH ROW
-BEGIN
-    DECLARE v_next_id INT;
-
-    IF NEW.submission_name IS NULL OR TRIM(NEW.submission_name) = '' THEN
-        -- Peek at the next auto-increment value for this table
-        SELECT AUTO_INCREMENT
-        INTO   v_next_id
-        FROM   information_schema.TABLES
-        WHERE  TABLE_SCHEMA = DATABASE()
-        AND    TABLE_NAME   = 'code_submissions';
-
-        SET NEW.submission_name = CONCAT('Submission #', v_next_id);
-    END IF;
-END$$
-
 
 -- ------------------------------------------------------------
 -- trg_after_optimization_run_insert
@@ -285,3 +264,4 @@ END$$
 
 DELIMITER ;
 
+ 

@@ -163,6 +163,3 @@ Visit `http://127.0.0.1:5000` in your browser.
 | `optimization_profiles` | Named GCC/G++ flag profiles |
 | `optimization_runs` | Results of optimized runs (upserted) |
 | `execution_error_log` | Compile errors, runtime crashes, timeouts |
-
----
- developed as a DBMS course project.

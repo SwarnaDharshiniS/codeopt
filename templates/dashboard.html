@@ -1,45 +1,75 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="fw-bold mb-4" style="color:#F8E9E9;">
-    👋 Welcome, {{ user.name }}
-</h2>
-
-<div class="row">
-
-    <div class="col-md-4 mb-4">
-        <div class="card card-dark p-4">
-            <h3 style="color:#8B2E2E;">📁 {{ stats.projects }}</h3>
-            <p class="mb-1" style="color:#C9AFAF;">Projects</p>
-        </div>
-    </div>
-
-    <div class="col-md-4 mb-4">
-        <div class="card card-dark p-4">
-            <h3 style="color:#8B2E2E;">🧾 {{ stats.submissions }}</h3>
-            <p class="mb-1" style="color:#C9AFAF;">Code Submissions</p>
-        </div>
-    </div>
-
-    <div class="col-md-4 mb-4">
-        <div class="card card-dark p-4">
-            <h3 style="color:#8B2E2E;">⚡ {{ stats.runs }}</h3>
-            <p class="mb-1" style="color:#C9AFAF;">Optimization Runs</p>
-        </div>
-    </div>
-
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="fw-bold mb-0" style="color:#F8E9E9;">
+        👋 Welcome back, {{ user.name }}
+    </h2>
+    <a href="/projects" class="btn btn-burgundy">
+        + New Project
+    </a>
 </div>
 
-<div class="mt-4">
+<!-- Stats Row -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card card-dark p-4 text-center">
+            <div style="font-size:2.2rem; font-weight:bold; color:#8B2E2E;">
+                {{ stats.projects }}
+            </div>
+            <p style="color:#C9AFAF; margin:6px 0 0;">📁 Projects</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card card-dark p-4 text-center">
+            <div style="font-size:2.2rem; font-weight:bold; color:#8B2E2E;">
+                {{ stats.submissions }}
+            </div>
+            <p style="color:#C9AFAF; margin:6px 0 0;">🧾 Submissions</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card card-dark p-4 text-center">
+            <div style="font-size:2.2rem; font-weight:bold; color:#8B2E2E;">
+                {{ stats.runs }}
+            </div>
+            <p style="color:#C9AFAF; margin:6px 0 0;">⚡ Optimization Runs</p>
+        </div>
+    </div>
+</div>
 
-    <a href="/projects" class="btn btn-burgundy btn-lg me-2">
-        View Projects →
-    </a>
-
-    <a href="/projects" class="btn btn-outline-burgundy btn-lg">
-        Create New Project +
-    </a>
-
+<!-- Quick Links -->
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <a href="/projects" class="text-decoration-none">
+            <div class="card card-dark p-4 h-100" style="cursor:pointer;">
+                <h5 style="color:#F8E9E9;">📁 My Projects</h5>
+                <p style="color:#C9AFAF; font-size:0.9rem; margin:0;">
+                    View, create, and manage your code projects.
+                </p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="/analytics" class="text-decoration-none">
+            <div class="card card-dark p-4 h-100" style="cursor:pointer;">
+                <h5 style="color:#F8E9E9;">📊 Analytics</h5>
+                <p style="color:#C9AFAF; font-size:0.9rem; margin:0;">
+                    Avg execution times by language and optimization flag.
+                </p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="/graph" class="text-decoration-none">
+            <div class="card card-dark p-4 h-100" style="cursor:pointer;">
+                <h5 style="color:#F8E9E9;">🕸 Knowledge Graph</h5>
+                <p style="color:#C9AFAF; font-size:0.9rem; margin:0;">
+                    Visualise your projects, submissions, and optimization relationships.
+                </p>
+            </div>
+        </a>
+    </div>
 </div>
 
 {% endblock %}

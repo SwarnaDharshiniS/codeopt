@@ -1,33 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="fw-bold mb-1" style="color:#F8E9E9;">
-    🔗 Similar Submissions
-</h2>
+<h2 class="fw-bold mb-1" style="color:#F8E9E9;">🔗 Similar Submissions</h2>
 <p style="color:#C9AFAF;">
     {{ submission.submission_name or ("Submission " ~ submission.submission_id) }}
     — {{ submission.language | upper }}
 </p>
 
 <div class="d-flex gap-2 mb-4">
-    <a href="/submissions/{{ submission.project_id }}"
-       class="btn btn-secondary">← Back</a>
-    <a href="/recommendations"
-       class="btn btn-outline-burgundy">🤝 Recommendations</a>
+    <a href="/submissions/{{ submission.project_id }}" class="btn btn-secondary">← Back</a>
 </div>
 
 {% if similars %}
+
 <p style="color:#C9AFAF; font-size:0.85rem; margin-bottom:16px;">
-    Found {{ similars | length }} similar submission(s) across all users —
-    based on same language, similar output, and similar runtime.
+    Found {{ similars | length }} similar submission(s) —
+    matched by language, output length, and runtime proximity.
 </p>
 
 <div class="row">
     {% for s in similars %}
     <div class="col-md-6 mb-3">
         <div class="card card-dark p-4">
-
-            <!-- Similarity Score Bar -->
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <span style="color:#F8E9E9; font-weight:bold;">
                     {{ s.submission_name or ("Submission " ~ s.submission_id) }}
@@ -36,31 +30,42 @@
                     {{ (s.similarity_score * 100) | int }}% match
                 </span>
             </div>
-
-            <!-- Score bar -->
             <div style="background:#2E1A1A; border-radius:4px; height:6px; margin-bottom:12px;">
                 <div style="background:#8B2E2E; border-radius:4px; height:6px;
                             width:{{ (s.similarity_score * 100) | int }}%;"></div>
             </div>
-
             <p style="color:#C9AFAF; font-size:0.88rem; margin:0;">
                 👤 Owner: <strong style="color:#F8E9E9;">{{ s.owner_name }}</strong><br>
                 💻 Language: <strong>{{ s.language | upper }}</strong><br>
-                🔍 Reason: <span style="color:#8B2E2E;">{{ s.reason | replace("_", " ") | replace("+", " + ") }}</span>
+                🔍 Reason: <span style="color:#8B2E2E;">
+                    {{ s.reason | replace("_", " ") | replace("+", " + ") }}
+                </span>
             </p>
-
         </div>
     </div>
     {% endfor %}
 </div>
 
 {% else %}
-<div class="card card-dark p-4">
-    <p style="color:#C9AFAF;">
-        No similar submissions found yet. Run this submission first so
-        similarity scores can be calculated, then check back.
-    </p>
-</div>
-{% endif %}
 
+<div class="card card-dark p-4" style="border-left:3px solid #8B2E2E;">
+    <h5 style="color:#F8E9E9;">No similar submissions detected yet.</h5>
+    <p style="color:#C9AFAF; font-size:0.9rem; margin-top:8px;">
+        Similarity is detected automatically after you run a submission.
+        The system compares output length, runtime, and language with all other submissions.
+    </p>
+    <p style="color:#C9AFAF; font-size:0.9rem;">
+        To trigger detection:
+    </p>
+    <ol style="color:#C9AFAF; font-size:0.9rem; line-height:2;">
+        <li>Click <strong style="color:#F8E9E9;">▶ Run Normally</strong> on this submission.</li>
+        <li>Once it runs, come back here — similar submissions will appear if any match.</li>
+        <li>The more submissions you and other users run, the richer this view becomes.</li>
+    </ol>
+    <a href="/run/{{ submission.submission_id }}" class="btn btn-burgundy mt-2">
+        ▶ Run Now to Detect Similarities →
+    </a>
+</div>
+
+{% endif %}
 {% endblock %}

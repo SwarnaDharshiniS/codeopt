@@ -8,12 +8,6 @@
     </span>
 </h2>
 
-<div class="d-flex gap-2 mb-4">
-    <a href="/graph"       class="btn btn-secondary">🕸 Graph View</a>
-    <a href="/analytics"   class="btn btn-outline-burgundy">📊 MongoDB Analytics</a>
-    <a href="/recommendations" class="btn btn-outline-burgundy">🤝 Recommendations</a>
-</div>
-
 <div class="row">
 
     <!-- ── 1. Opt Performance (global) ── -->
@@ -159,6 +153,43 @@
             {% endif %}
         </div>
     </div>
+
+    
+    <!-- ── 6. Global Popular Profiles -->
+    <div class="card card-dark p-4">
+        <h4 style="color:#F8E9E9;">🌐 Most Popular Across All Users</h4>
+        <p style="color:#C9AFAF; font-size:0.85rem;">
+            Globally most-used optimization profiles on CodeOpt.
+        </p>
+
+        {% if popular %}
+        <table class="table mt-3">
+            <thead>
+                <tr>
+                    <th>Flag</th><th>Profile</th><th>Users</th><th>Total Uses</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in popular %}
+                <tr>
+                    <td style="color:#8B2E2E; font-weight:bold;">{{ p.compiler_flags }}</td>
+                    <td>{{ p.profile_name }}</td>
+                    <td>{{ p.user_count }}</td>
+                    <td>{{ p.total_uses }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="mt-3 p-3" style="background:#1F1414; border-radius:8px; border:1px solid #3A2020;">
+            <p style="color:#C9AFAF; font-size:0.9rem; margin:0;">
+                No usage data yet. Run any submission with <strong style="color:#F8E9E9;">⚡ Run Optimized</strong> to start building global stats.
+            </p>
+            <a href="/projects" class="btn btn-burgundy btn-sm mt-3">Go to Projects →</a>
+        </div>
+        {% endif %}
+    </div>
+
 
 </div>
 
