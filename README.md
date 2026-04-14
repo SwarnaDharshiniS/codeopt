@@ -67,7 +67,6 @@ codeopt/
 └── templates/
     ├── base.html
     ├── home.html
-    ├── index.html
     ├── login.html
     ├── register.html
     ├── dashboard.html
@@ -84,8 +83,7 @@ codeopt/
     ├── compare.html
     ├── best_opt.html
     ├── evolution.html
-    ├── similar.html
-    └── recommendations.html
+    └── similar.html
 ```
 
 ---
